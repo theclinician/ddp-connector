@@ -2,13 +2,20 @@
 
 DDP client bindings for react-redux
 
+## Installation
+
+```
+npm install --save @theclinician/ddp-connector
+```
+
 ## Basic usage
 
-### Store configuration
+### Configuration
 ```javascript
 import DDPClient from '@theclinician/ddp-client';
-import DDPConnector, { ddpReducer } from '@theclinician/ddp-connector';
+import DDPConnector, { ddpReducer, DDPProvider } from '@theclinician/ddp-connector';
 import { combineReducers, applyMiddleware } from 'redux';
+import { Provider } from 'react-redux';
 import thunk from 'redux-thunk';
 
 const ddpClient = new DDPClient({
@@ -32,6 +39,14 @@ const store = createStore(
   applyMiddleware(
     thunk.withExtraArgument({ ddpConnector }),
   );
+);
+
+const RootContainer = () => (
+  <Provider store={store}>
+    <DDPProvider ddpConnector={ddpConnector}>
+      {/* ... */}
+    </DDPProvider>
+  </Provider>
 );
 ```
 
@@ -126,7 +141,7 @@ ddp({
 ));
 ```
 
-## Api
+## API
 
 ### `DDPConnector(options)`
 
