@@ -143,6 +143,10 @@ import DDPConnector from '@theclinician/ddp-connector';
  * @param {Function} options.defaultLoaderComponent
  */
 const ddpConnector = new DDPConnector(options);
+
+// NOTE: By registering a model you can ensrue that all entities which you receive
+//       from store will me instances of the given model rather than pure js objects.
+DDPConnector.registerModel(User); // User.collection needs to be set
 ```
 
 ### `ddp(options)`
