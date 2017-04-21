@@ -6,6 +6,7 @@ DDP client bindings for react-redux
 
 ```
 npm install --save @theclinician/ddp-connector
+npm install --save redux redux-thunk react-redux babel-preset-es2015 babel-preset-stage-3
 ```
 
 ## Basic usage
@@ -13,8 +14,8 @@ npm install --save @theclinician/ddp-connector
 ### Configuration
 ```javascript
 import DDPClient from '@theclinician/ddp-client';
-import DDPConnector, { ddpReducer, DDPProvider } from '@theclinician/ddp-connector';
-import { combineReducers, applyMiddleware } from 'redux';
+import DDPConnector, { ddpReducer, Provider as DDPProvider } from '@theclinician/ddp-connector';
+import { combineReducers, applyMiddleware, createStore } from 'redux';
 import { Provider } from 'react-redux';
 import thunk from 'redux-thunk';
 
