@@ -27,3 +27,10 @@ export const allLists = new ApiSpec({
   name: 'api.TodoLists.allLists',
   schema: new Schema(),
 });
+
+export const oneList = new ApiSpec({
+  name: 'api.TodoLists.oneList',
+  schema: new Schema({
+    listId: { type: String, regEx: Schema.RegEx.Id },
+  }),
+});

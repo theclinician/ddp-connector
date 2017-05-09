@@ -7,7 +7,7 @@ implement(api.insert, {
   run({
     title,
   }) {
-
+    return TodoLists.insert({ title });
   },
 });
 
@@ -16,7 +16,11 @@ implement(api.update, {
     listId,
     title,
   }) {
-
+    return TodoLists.update({ _id: listId }, {
+      $set: {
+        title,
+      },
+    });
   },
 });
 
@@ -24,13 +28,19 @@ implement(api.remove, {
   run({
     listId,
   }) {
-
+    return TodoLists.remove({ _id: listId });
   },
 });
 
 publish(api.allLists, {
   run() {
     return TodoLists.find({});
+  },
+});
+
+publish(api.oneList, {
+  run({ listId }) {
+    return TodoLists.find({ _id: listId });
   },
 });
 

@@ -7,8 +7,13 @@ implement(api.insert, {
   run({
     name,
     done,
+    listId,
   }) {
-
+    Todos.insert({
+      name,
+      done,
+      listId,
+    });
   },
 });
 
@@ -18,7 +23,14 @@ implement(api.update, {
     name,
     done,
   }) {
-
+    Todos.update({
+      _id: todoId,
+    }, {
+      $set: {
+        name,
+        done,
+      },
+    });
   },
 });
 
@@ -26,7 +38,7 @@ implement(api.remove, {
   run({
     todoId,
   }) {
-
+    Todos.remove({ _id: todoId });
   },
 });
 
