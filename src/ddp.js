@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import EJSON from 'ejson';
 import { connect } from 'react-redux';
 import DDPConnector from './DDPConnector.js';
@@ -27,10 +28,10 @@ const ddp = ({
   getLoaderComponent = defaultComponent => defaultComponent,
 } = {}) => (Inner) => {
   const propTypes = {
-    subscriptions: React.PropTypes.array,
-    queries: React.PropTypes.object,
-    subscriptionsReady: React.PropTypes.bool,
-    queriesReady: React.PropTypes.bool,
+    subscriptions: PropTypes.array,
+    queries: PropTypes.object,
+    subscriptionsReady: PropTypes.bool,
+    queriesReady: PropTypes.bool,
   };
 
   const defaultProps = {
@@ -41,7 +42,7 @@ const ddp = ({
   };
 
   const contextTypes = {
-    ddpConnector: React.PropTypes.instanceOf(DDPConnector),
+    ddpConnector: PropTypes.instanceOf(DDPConnector),
   };
 
   class Container extends React.Component {
