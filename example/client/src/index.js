@@ -1,10 +1,19 @@
 import DDPClient from '@theclinician/ddp-client';
 import DDPConnector, { ddpReducer } from 'ddp-connector';
-import { createStore, combineReducers, applyMiddleware } from 'redux';
+import {
+  persistState,
+} from 'redux-devtools';
+import {
+  compose,
+  createStore,
+  combineReducers,
+  applyMiddleware,
+} from 'redux';
 import thunk from 'redux-thunk';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import App from './containers/App';
+import './store/registerModels.js';
 import './index.css';
 
 const ddpClient = new DDPClient({
@@ -14,19 +23,34 @@ const ddpClient = new DDPClient({
 
 const ddpConnector = new DDPConnector({
   ddpClient,
+  debug: true,
 });
 
 const rootReducer = combineReducers({
   ddp: ddpReducer,
 });
 
+const enhancer = compose(
+  window.__REDUX_DEVTOOLS_EXTENSION__ ? window.__REDUX_DEVTOOLS_EXTENSION__({}) : x => x,
+  persistState(
+    window.location.href.match(
+      /[?&]debug_session=([^&#]+)\b/,
+    ),
+  ),
+);
+
 const store = createStore(
   rootReducer,
   {},
-  applyMiddleware(
-    thunk.withExtraArgument({ ddpConnector }),
-  ),
+  compose(
+    applyMiddleware(
+      thunk.withExtraArgument({ ddpConnector }),
+    ),
+    enhancer,
+  )
 );
+
+ddpConnector.bindToStore(store);
 
 ReactDOM.render(
   <App store={store} ddpConnector={ddpConnector}/>,
