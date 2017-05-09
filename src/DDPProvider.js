@@ -1,7 +1,7 @@
 import React, { Children, PropTypes } from 'react';
 import DDPConnector from './DDPConnector.js';
 
-class Provider extends React.Component {
+class DDPProvider extends React.Component {
   constructor(props, context) {
     super(props, context);
     this.ddpConnector = props.ddpConnector;
@@ -16,15 +16,15 @@ class Provider extends React.Component {
   }
 }
 
-Provider.propTypes = {
+DDPProvider.propTypes = {
   children: PropTypes.node.isRequired,
   ddpConnector: PropTypes.instanceOf(DDPConnector).isRequired,
 };
 
-Provider.childContextTypes = {
+DDPProvider.childContextTypes = {
   ddpConnector: PropTypes.instanceOf(DDPConnector).isRequired,
 };
 
-Provider.displayName = 'Provider';
+DDPProvider.displayName = 'DDPProvider';
 
-export default Provider;
+export default DDPProvider;

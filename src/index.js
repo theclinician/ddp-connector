@@ -1,11 +1,11 @@
 import DDPConnector from './DDPConnector.js';
-import Provider from './Provider.js';
+import DDPProvider from './DDPProvider.js';
 import ddp from './ddp.js';
 import { ddpReducer } from './reducers.js';
 
 export default DDPConnector;
 export {
-  Provider,
+  DDPProvider,
   ddpReducer,
   ddp,
 };
