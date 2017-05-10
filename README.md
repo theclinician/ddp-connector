@@ -134,11 +134,9 @@ ddp({
   },
 }, {
   // NOTE: If a function is provided here it will receive defaultLoaderComponent as the first parameter
-  //       and it's expected to return a valid loader component, which will be rendered until all
-  //       subscriptions, mutations and queries are ready. If you don't want loader to be displayed at
-  //       all and for example you want to apply some custome logic based on the current subscriptions status,
-  //       pass "null" instead of a function here.
-  getLoaderComponent: null,
+  //       and it's expected to return a react node, to be displayed until subscriptions, mutations and queries are all ready.
+  //       If you don't want loader to be rendered at all, the easiest way is to pass "null" instead of a function.
+  renderLoader: null,
 })(({
   subscriptionsReady,
   mitationsReady,

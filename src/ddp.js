@@ -24,8 +24,8 @@ const ddp = ({
   mutations = {},
 }, {
   onMutationError,
+  renderLoader = defaultComponent => React.createElement(defaultComponent),
   getResourceId = params => EJSON.stringify(params),
-  getLoaderComponent = defaultComponent => defaultComponent,
   queriesUpdateDelay,
   subscriptionsUpdateDalay,
 } = {}) => (Inner) => {
@@ -142,14 +142,19 @@ const ddp = ({
         ...other
       } = this.props;
       const mutationsReady = numberOfPendingMutations <= 0;
-      if (getLoaderComponent &&
+      if (renderLoader &&
         (
           !subscriptionsReady ||
           !mutationsReady ||
           !queriesReady
         )
       ) {
-        return React.createElement(getLoaderComponent(ddpConnector.getLoaderComponent()));
+        return renderLoader(ddpConnector.getLoaderComponent(), {
+          ...other,
+          subscriptionsReady,
+          mutationsReady,
+          queriesReady,
+        });
       }
       return React.createElement(Inner, {
         ...other,
@@ -164,7 +169,10 @@ const ddp = ({
   Container.propTypes = propTypes;
   Container.defaultProps = defaultProps;
   Container.contextTypes = contextTypes;
-  Container.displayName = `ddp(${Inner.displayName})`;
+
+  if (process.env.NODE_ENV !== 'production') {
+    Container.displayName = `ddp(${Inner.displayName})`;
+  }
 
   const wrappedMapStateToSubscriptions = wrapMapState(makeMapStateToSubscriptions);
   const wrappedMapStateToQueries = wrapMapState(makeMapStateToQueries);
