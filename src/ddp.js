@@ -26,6 +26,8 @@ const ddp = ({
   onMutationError,
   getResourceId = params => EJSON.stringify(params),
   getLoaderComponent = defaultComponent => defaultComponent,
+  queriesUpdateDelay,
+  subscriptionsUpdateDalay,
 } = {}) => (Inner) => {
   const propTypes = {
     subscriptions: PropTypes.array,
@@ -87,14 +89,14 @@ const ddp = ({
       this.updateSubscriptions = debounce(subscriptions =>
         this.ddpConnector.subsManager.updateRequests(this.id, subscriptions),
         {
-          ms: this.ddpConnector.resourceUpdateDelay,
+          ms: subscriptionsUpdateDalay !== undefined ? subscriptionsUpdateDalay : this.ddpConnector.resourceUpdateDelay,
         },
       );
 
       this.updateQueries = debounce(queries =>
         this.ddpConnector.queryManager.updateRequests(this.id, Object.keys(queries).map(key => queries[key])),
         {
-          ms: this.ddpConnector.resourceUpdateDelay,
+          ms: queriesUpdateDelay !== undefined ? queriesUpdateDelay : this.ddpConnector.resourceUpdateDelay,
         },
       );
     }
