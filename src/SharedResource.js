@@ -1,5 +1,5 @@
+import { debounce } from '@theclinician/toolbelt';
 import { once } from './utils.js';
-import { debounce } from './debounce.js';
 
 class SharedResource {
   constructor({

@@ -2,6 +2,9 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import EJSON from 'ejson';
 import { connect } from 'react-redux';
+import {
+  debounce,
+} from '@theclinician/toolbelt';
 import DDPConnector from './DDPConnector.js';
 import {
   makeGetSubscriptionsReady,
@@ -12,9 +15,6 @@ import {
   createIdGenerator,
   wrapMapState,
 } from './utils.js';
-import {
-  debounce,
-} from './debounce.js';
 
 const uniqueId = createIdGenerator('listener.');
 

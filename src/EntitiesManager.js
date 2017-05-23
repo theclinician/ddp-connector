@@ -1,8 +1,8 @@
 import EJSON from 'ejson';
 import {
+  debounceKey,
   EventEmitter,
 } from '@theclinician/toolbelt';
-import { debounceKey } from './debounce.js';
 
 function asObject(map) {
   const object = {};
