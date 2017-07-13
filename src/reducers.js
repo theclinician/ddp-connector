@@ -20,6 +20,9 @@ import {
   setRestoring,
   setEntitiesCopy,
 } from './actions.js';
+import {
+  omit,
+} from './utils.js';
 
 class User {
   constructor(doc) {
@@ -93,7 +96,7 @@ export const subscriptionsReducer = handleActions({
     },
   }),
 
-  [deleteSubscription]: (state, { payload: { id } }) => remove({ collection: state, entities: { [id]: true } }),
+  [deleteSubscription]: (state, { payload: { id } }) => omit(state, [id]),
 }, {});
 
 export const queriesReducer = handleActions({
@@ -110,7 +113,7 @@ export const queriesReducer = handleActions({
     },
   }),
 
-  [deleteQuery]: (state, { payload: { id } }) => remove({ collection: state, entities: { [id]: true } }),
+  [deleteQuery]: (state, { payload: { id } }) => omit(state, [id]),
 }, {});
 
 export const ddpReducer = combineReducers({
