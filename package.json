@@ -52,7 +52,7 @@
     "webpack": "^2.2.1"
   },
   "dependencies": {
-    "@theclinician/ddp-client": "0.0.2",
+    "@theclinician/ddp-client": "0.0.4",
     "@theclinician/toolbelt": "0.0.2",
     "ejson": "^2.1.2",
     "prop-types": "^15.5.8",

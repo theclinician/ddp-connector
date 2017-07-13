@@ -11,9 +11,7 @@ import {
   updateQuery,
   deleteQuery,
 
-  insertEntities,
-  updateEntities,
-  removeEntities,
+  replaceEntities,
   clearEntities,
 
   setUser,
@@ -22,11 +20,6 @@ import {
   setRestoring,
   setEntitiesCopy,
 } from './actions.js';
-import {
-  insert,
-  update,
-  remove,
-} from './modifiers.js';
 
 class User {
   constructor(doc) {
@@ -80,28 +73,8 @@ export const currentUserReducer = handleActions({
 });
 
 export const entitiesReducer = handleActions({
-  [insertEntities]: (state, { payload: { collection, entities, Model } }) => ({
-    ...state,
-    [collection]: insert({
-      Model,
-      entities,
-      collection: state[collection],
-    }),
-  }),
-  [updateEntities]: (state, { payload: { collection, entities, Model } }) => ({
-    ...state,
-    [collection]: update({
-      Model,
-      entities,
-      collection: state[collection],
-    }),
-  }),
-  [removeEntities]: (state, { payload: { collection, entities } }) => ({
-    ...state,
-    [collection]: remove({
-      entities,
-      collection: state[collection],
-    }),
+  [replaceEntities]: (state, { payload: entities }) => ({
+    ...entities,
   }),
   [clearEntities]: () => ({}),
 }, {});

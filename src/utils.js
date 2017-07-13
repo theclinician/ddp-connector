@@ -20,6 +20,17 @@ export const once = (func) => {
   };
 };
 
+export const omit = (object, keys) => {
+  if (!keys || keys.length === 0) {
+    return object;
+  }
+  const copy = { ...object };
+  for (const key of keys) {
+    delete copy[key];
+  }
+  return copy;
+};
+
 export const wrapMapState = (mapToProps) => {
   let compiled;
   // Make sure that the function is only called with the arguments it needs.

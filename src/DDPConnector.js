@@ -2,9 +2,9 @@ import React from 'react';
 import {
   EventEmitter,
   SHA256,
+  debounce,
 } from '@theclinician/toolbelt';
 import ResourcesManager from './ResourcesManager.js';
-import EntitiesManager from './EntitiesManager.js';
 import {
   setConnected,
 
@@ -22,9 +22,7 @@ import {
   deleteSubscription,
   updateSubscription,
 
-  insertEntities,
-  updateEntities,
-  removeEntities,
+  replaceEntities,
 } from './actions.js';
 
 class DDPConnector extends EventEmitter {
@@ -42,18 +40,23 @@ class DDPConnector extends EventEmitter {
     this.defaultLoaderComponent = defaultLoaderComponent;
 
     this.ddp = ddpClient;
+
+    // NOTE: This is not a nice solution. Will need to fix it.
+    this.ddp.models = this.constructor.models;
+
     this.endpoint = ddpClient.endpoint;
 
-    this.entitiesManager = new EntitiesManager({
-      models: this.constructor.models,
-      updateDelay: entitiesUpdateDelay,
+    const scheduleDataUpdate = debounce((collections) => {
+      this.emit('dataUpdated', collections);
+      this.isUpdateScheduled = false;
+    }, {
+      ms: entitiesUpdateDelay,
     });
 
-    this.ddp.pipe([
-      'added',
-      'changed',
-      'removed',
-    ], this.entitiesManager);
+    this.ddp.on('dataUpdated', (collections) => {
+      this.isUpdateScheduled = true;
+      scheduleDataUpdate(collections);
+    });
 
     this.ddp.pipe([
       'loginError',
@@ -161,9 +164,7 @@ class DDPConnector extends EventEmitter {
     this.queryManager.on('error', ({ id }) => dispatch(updateQuery({ id, error: true })));
 
     // entities
-    this.entitiesManager.on('insert entities', params => dispatch(insertEntities(params)));
-    this.entitiesManager.on('update entities', params => dispatch(updateEntities(params)));
-    this.entitiesManager.on('remove entities', params => dispatch(removeEntities(params)));
+    this.on('dataUpdated', entities => dispatch(replaceEntities(entities)));
 
     // currentUser
     this.ddp.on('loggingIn', () => dispatch(setLoggingIn()));
@@ -177,7 +178,11 @@ class DDPConnector extends EventEmitter {
   }
 
   afterFlush(action) {
-    return this.entitiesManager.afterFlush(action);
+    if (this.isUpdateScheduled) {
+      this.once('dataUpdated', () => action());
+    } else {
+      action();
+    }
   }
 
   resolveAfterFlush(value) {

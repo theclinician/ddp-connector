@@ -10,9 +10,7 @@ export const createQuery = createAction('@@DDP/CREATE_QUERY');
 export const deleteQuery = createAction('@@DDP/DELETE_QUERY');
 export const updateQuery = createAction('@@DDP/UPDATE_QUERY');
 
-export const insertEntities = createAction('@@DDP/INSERT_ENTITIES');
-export const updateEntities = createAction('@@DDP/UPDATE_ENTITIES');
-export const removeEntities = createAction('@@DDP/REMOVE_ENTITIES');
+export const replaceEntities = createAction('@@DDP/REPLACE_ENTITIES');
 export const clearEntities = createAction('@@DDP/CLEAR_ENTITIES');
 
 export const setLoggingIn = createAction('@@DDP/SET_LOGGING_IN');
