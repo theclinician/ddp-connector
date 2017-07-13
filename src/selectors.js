@@ -6,8 +6,8 @@ const constant = x => () => x;
 const identity = x => x;
 const property = name => (_, x) => x && x[name];
 
-export const getIsConnected = state => !!state.ddp.status.connected;
-export const getIsRestoring = state => !!state.ddp.status.restoring;
+export const getIsConnected = state => !!state.ddp.status && state.ddp.status.connected;
+export const getIsRestoring = state => !!state.ddp.status && state.ddp.status.restoring;
 
 export const createArraySelector = createSelectorCreator(
   defaultMemoize,
@@ -92,7 +92,8 @@ export const makeGetQueriesValues = getQueryId => createSelector(
 );
 
 const makeGetAllById = (collection, prefix) => (state) => {
-  if (state[prefix].status.restoring) {
+  if (state[prefix].status &&
+      state[prefix].status.restoring) {
     return state[prefix].status.entities &&
            state[prefix].status.entities[collection];
   }
