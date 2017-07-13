@@ -23,14 +23,17 @@ implement(api.update, {
     name,
     done,
   }) {
+    const mutation = {
+      $set: { name },
+    };
+    if (!done) {
+      mutation.$unset = { done: 1 };
+    } else {
+      mutation.$set.done = true;
+    }
     Todos.update({
       _id: todoId,
-    }, {
-      $set: {
-        name,
-        done,
-      },
-    });
+    }, mutation);
   },
 });
 
