@@ -17,6 +17,10 @@ import {
 } from './utils.js';
 
 const uniqueId = createIdGenerator('listener.');
+const increase = (key, value) => prevState => ({
+  ...prevState,
+  [key]: (prevState[key] || 0) + value,
+});
 
 const ddp = ({
   subscriptions: makeMapStateToSubscriptions,
@@ -117,15 +121,11 @@ const ddp = ({
     }
 
     beginMutation() {
-      this.setState({
-        numberOfPendingMutations: this.state.numberOfPendingMutations + 1,
-      });
+      this.setState(increase('numberOfPendingMutations', 1));
     }
 
     endMutation(result) {
-      this.setState({
-        numberOfPendingMutations: this.state.numberOfPendingMutations - 1,
-      });
+      this.setState(increase('numberOfPendingMutations', -1));
       return result;
     }
 
