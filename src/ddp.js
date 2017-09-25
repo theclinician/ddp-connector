@@ -77,12 +77,10 @@ const ddp = ({
 
       this.handlers = {};
       Object.keys(mutations).forEach((key) => {
-        this.handlers[key] = (...args) => {
-          mutations[key]({
-            ...this.props,
-            mutate,
-          })(...args);
-        };
+        this.handlers[key] = (...args) => mutations[key]({
+          ...this.props,
+          mutate,
+        })(...args);
       });
     }
 
