@@ -32,6 +32,7 @@ class DDPConnector extends EventEmitter {
     cleanupDelay = 60 * 1000,
     entitiesUpdateDelay = 100,
     resourceUpdateDelay = 100,
+    getMessageChannel = null,
     defaultLoaderComponent = () => React.createElement('div', {}, ['Loading ...']),
   }) {
     super();
@@ -113,6 +114,17 @@ class DDPConnector extends EventEmitter {
       this.subsManager.cleanupResources();
       this.queryManager.cleanupResources();
     });
+
+    if (getMessageChannel) {
+      const handleCollectionMessage = ({ collection, id, fields }) => {
+        const channel = getMessageChannel(collection);
+        if (channel) {
+          this.emit(`messages.${channel}`, id, fields);
+        }
+      };
+      this.ddp.on('added', handleCollectionMessage);
+      this.ddp.on('changed', handleCollectionMessage);
+    }
 
     if (debug) {
       this.ddp.socket.on('message:out', message => console.warn('DDP/OUT', message));

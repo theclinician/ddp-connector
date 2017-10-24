@@ -24,6 +24,9 @@ const ddpClient = new DDPClient({
 const ddpConnector = new DDPConnector({
   ddpClient,
   debug: true,
+  getMessageChannel(collection) {
+    return collection.indexOf('messages.') === 0;
+  },
 });
 
 const rootReducer = combineReducers({

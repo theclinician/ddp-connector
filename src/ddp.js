@@ -25,6 +25,7 @@ const increase = (key, value) => prevState => ({
 const ddp = ({
   subscriptions: makeMapStateToSubscriptions,
   queries: makeMapStateToQueries,
+  messages = {},
   mutations = {},
 }, {
   onMutationError,
@@ -101,6 +102,10 @@ const ddp = ({
           ms: queriesUpdateDelay !== undefined ? queriesUpdateDelay : this.ddpConnector.resourceUpdateDelay,
         },
       );
+
+      if (messages) {
+        this.messagesListeners = Object.keys(messages).map(channel => this.ddpConnector.on(`messages.${channel}`, messages[channel]));
+      }
     }
 
     componentDidMount() {
@@ -116,6 +121,10 @@ const ddp = ({
     componentWillUnmount() {
       this.updateSubscriptions([]);
       this.updateQueries([]);
+      if (this.messagesListeners) {
+        this.messagesListeners.forEach(stop => stop());
+        this.messagesListeners = null;
+      }
     }
 
     beginMutation() {
