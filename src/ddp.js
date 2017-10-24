@@ -83,6 +83,11 @@ const ddp = ({
           mutate,
         })(...args);
       });
+
+      this.messageHandlers = {};
+      Object.keys(messages).forEach((key) => {
+        this.messageHandlers[key] = (...args) => messages[key](this.props)(...args);
+      });
     }
 
     componentWillMount() {
@@ -103,9 +108,8 @@ const ddp = ({
         },
       );
 
-      if (messages) {
-        this.messagesListeners = Object.keys(messages).map(channel => this.ddpConnector.on(`messages.${channel}`, messages[channel]));
-      }
+      this.messagesListeners = Object.keys(this.messageHandlers)
+        .map(channel => this.ddpConnector.on(`messages.${channel}`, this.messageHandlers[channel]));
     }
 
     componentDidMount() {
