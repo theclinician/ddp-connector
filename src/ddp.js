@@ -58,11 +58,11 @@ const ddp = ({
       this.state = {
         numberOfPendingMutations: 0,
       };
-      const mutate = (request) => {
+      const mutate = (request, options) => {
         if (request) {
           const { name, params } = request;
           this.beginMutation();
-          return this.ddpConnector.apply(name, params, {})
+          return this.ddpConnector.apply(name, params, options)
             .then(res => this.endMutation(res))
             .catch((err) => {
               this.endMutation();
