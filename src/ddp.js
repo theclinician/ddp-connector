@@ -129,14 +129,19 @@ const ddp = ({
         this.messagesListeners.forEach(stop => stop());
         this.messagesListeners = null;
       }
+      this.unmounted = true;
     }
 
     beginMutation() {
-      this.setState(increase('numberOfPendingMutations', 1));
+      if (!this.unmounted) {
+        this.setState(increase('numberOfPendingMutations', 1));
+      }
     }
 
     endMutation(result) {
-      this.setState(increase('numberOfPendingMutations', -1));
+      if (!this.unmounted) {
+        this.setState(increase('numberOfPendingMutations', -1));
+      }
       return result;
     }
 
