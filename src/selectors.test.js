@@ -51,7 +51,7 @@ describe('Test selectors', () => {
       },
     };
   });
-  describe.only('createEntitiesSelectors.find()', () => {
+  describe('createEntitiesSelectors.find()', () => {
     beforeEach(function () {
       //--------------------------------------------------
       const find = this.selectors.find(doc => !!doc.flag);

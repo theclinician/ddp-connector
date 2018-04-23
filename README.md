@@ -91,7 +91,7 @@ class User {
 
 User.collection = 'users'; // the Meteor default collection for storing users
 User.selectors = {
-  ...createEntitiesSelectors(User.collection),
+  ...createEntitiesSelectors(User.collection, { Model: User }),
   ...createCurrentUserSelectors(User.collection, { Model: User }),
 };
 

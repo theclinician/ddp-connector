@@ -91,17 +91,27 @@ export const makeGetQueriesValues = getQueryId => createSelector(
   },
 );
 
-const makeGetAllById = (collection, prefix) => (state) => {
+const makeGetAllById = (collection, prefix, Model) => (state) => {
+  let entities;
   if (state[prefix].status &&
       state[prefix].status.restoring) {
-    return state[prefix].status.entities &&
-           state[prefix].status.entities[collection];
+    entities = state[prefix].status.entities &&
+               state[prefix].status.entities[collection];
+  } else {
+    entities = state[prefix].entities[collection];
   }
-  return state[prefix].entities[collection];
+  if (Model && entities) {
+    const models = {};
+    Object.keys(entities).forEach((id) => {
+      models[id] = new Model(entities[id]);
+    });
+    return models;
+  }
+  return entities;
 };
 
-export const createEntitiesSelectors = (collection, { prefix = 'ddp' } = {}) => {
-  const getAllById = makeGetAllById(collection, prefix);
+export const createEntitiesSelectors = (collection, { prefix = 'ddp', Model } = {}) => {
+  const getAllById = makeGetAllById(collection, prefix, Model);
 
   const getOne = (
     getId = (state, props) => props.id,
@@ -159,7 +169,7 @@ export const createCurrentUserSelectors = (collection, { Model, prefix = 'ddp' }
   const getIsLoggingIn = state => state[prefix].currentUser.isLoggingIn;
 
   const getUserEntity = createSelector(
-    makeGetAllById(collection, prefix),
+    makeGetAllById(collection, prefix, Model),
     getCurrentId,
     (users, userId) => users && users[userId],
   );
