@@ -32,7 +32,7 @@ const ddp = ({
   renderLoader = defaultComponent => React.createElement(defaultComponent),
   getResourceId = params => EJSON.stringify(params),
   queriesUpdateDelay,
-  subscriptionsUpdateDalay,
+  subscriptionsUpdateDelay,
 } = {}) => (Inner) => {
   const propTypes = {
     subscriptions: PropTypes.array,
@@ -97,7 +97,7 @@ const ddp = ({
       this.updateSubscriptions = debounce(subscriptions =>
         this.ddpConnector.subsManager.updateRequests(this.id, subscriptions),
         {
-          ms: subscriptionsUpdateDalay !== undefined ? subscriptionsUpdateDalay : this.ddpConnector.resourceUpdateDelay,
+          ms: subscriptionsUpdateDelay !== undefined ? subscriptionsUpdateDelay : this.ddpConnector.resourceUpdateDelay,
         },
       );
 
