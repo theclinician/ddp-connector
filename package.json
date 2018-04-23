@@ -1,6 +1,6 @@
 {
   "name": "@theclinician/ddp-connector",
-  "version": "0.5.0-rc1",
+  "version": "0.5.0-rc2",
   "description": "DDP client bindings for react-redux",
   "main": "./lib/index.js",
   "scripts": {
