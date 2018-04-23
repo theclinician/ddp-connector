@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import {
   createStructuredSelector,
 } from 'reselect';
-import { ddp } from 'ddp-connector';
+import { ddp } from '@theclinician/ddp-connector';
 import { connect } from 'react-redux';
 import {
   compose,

@@ -3,7 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@theclinician/ddp-client": "0.0.4",
+    "@theclinician/ddp-client": "^0.5.0-rc1",
+    "@theclinician/ddp-connector": "file:../..",
     "flat": "^2.0.1",
     "react": "^15.5.4",
     "react-dom": "^15.5.4",
@@ -18,7 +19,7 @@
     "very-simple-schema": "0.0.5"
   },
   "devDependencies": {
-    "react-scripts": "0.9.5"
+    "react-scripts": "1.1.4"
   },
   "proxy": "http://localhost:4000",
   "scripts": {

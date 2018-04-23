@@ -1,5 +1,5 @@
 import React from 'react';
-import { DDPProvider } from 'ddp-connector';
+import { DDPProvider } from '@theclinician/ddp-connector';
 import { Provider } from 'react-redux';
 import Router from '../routes/Router';
 

@@ -1,5 +1,5 @@
 import DDPClient from '@theclinician/ddp-client';
-import DDPConnector, { ddpReducer } from 'ddp-connector';
+import DDPConnector, { ddpReducer } from '@theclinician/ddp-connector';
 import {
   persistState,
 } from 'redux-devtools';
@@ -13,7 +13,6 @@ import thunk from 'redux-thunk';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import App from './containers/App';
-import './store/registerModels.js';
 import './index.css';
 
 const ddpClient = new DDPClient({
