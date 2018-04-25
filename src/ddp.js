@@ -5,16 +5,16 @@ import { connect } from 'react-redux';
 import {
   debounce,
 } from '@theclinician/toolbelt';
-import DDPConnector from './DDPConnector.js';
+import DDPConnector from './DDPConnector';
 import {
   makeGetSubscriptionsReady,
   makeGetQueriesValues,
   makeGetQueriesReady,
-} from './selectors.js';
+} from './selectors';
 import {
   createIdGenerator,
   wrapMapState,
-} from './utils.js';
+} from './utils';
 
 const uniqueId = createIdGenerator('listener.');
 const increase = (key, value) => prevState => ({

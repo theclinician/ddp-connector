@@ -1,7 +1,7 @@
-import DDPConnector from './DDPConnector.js';
-import DDPProvider from './DDPProvider.js';
-import ddp from './ddp.js';
-import { ddpReducer } from './reducers.js';
+import DDPConnector from './DDPConnector';
+import DDPProvider from './DDPProvider';
+import ddp from './ddp';
+import { ddpReducer } from './reducers';
 
 export default DDPConnector;
 export {
@@ -10,4 +10,4 @@ export {
   ddp,
 };
 
-export * from './selectors.js';
+export * from './selectors';
