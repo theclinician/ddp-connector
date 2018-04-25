@@ -23,10 +23,6 @@ const createEntitiesSelectors = (collection, {
   prefix = 'ddp',
 } = {}) => {
   const selectEntities = (state) => {
-    // if (!state[prefix]) {
-    //   console.log('STATE', state);
-    //   throw new Error(state);
-    // }
     if (state[prefix].status &&
         state[prefix].status.restoring) {
       return state[prefix].status.entities &&
