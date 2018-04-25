@@ -5,13 +5,14 @@
   "main": "./lib/index.js",
   "scripts": {
     "build": "babel src --out-dir lib --ignore '*.test.js'",
+    "build-watch": "watch 'npm run build' ./src",
     "build-webpack": "webpack --progress",
     "clean": "rimraf lib coverage",
-    "coverage": "babel-node $(npm bin)/isparta cover _mocha -- 'src/**/*.test.js'",
+    "coverage": "jest --coverage src",
     "lint": "eslint src",
-    "prepublish": "npm run clean && npm run build",
-    "test": "mocha --compilers js:babel-core/register 'src/**/*.test.js'",
-    "test-watch": "mocha --watch --compilers js:babel-core/register 'src/**/*.test.js'"
+    "prepare": "npm run clean && npm run build",
+    "test": "jest",
+    "test-watch": "jest --watch"
   },
   "repository": {
     "type": "git",
@@ -35,29 +36,27 @@
     "babel-preset-es2015": "^6.18.0",
     "babel-preset-stage-3": "^6.22.0",
     "babel-root-import": "^4.1.5",
-    "chai": "^3.5.0",
-    "chai-as-promised": "^6.0.0",
     "clean-webpack-plugin": "^0.1.15",
     "eslint": "^3.12.2",
     "eslint-config-airbnb-base": "^11.0.1",
     "eslint-import-resolver-meteor": "^0.4.0",
     "eslint-plugin-import": "^2.2.0",
-    "isparta": "^4.0.0",
-    "mocha": "^3.2.0",
+    "jest": "^22.4.3",
+    "npm-watch": "^0.3.0",
     "rimraf": "^2.6.1",
-    "sinon": "^1.17.7",
-    "sinon-chai": "^2.8.0",
     "webpack": "^2.2.1"
   },
   "dependencies": {
     "@theclinician/ddp-client": "^0.5.0-rc1",
     "@theclinician/toolbelt": "0.0.2",
     "ejson": "^2.1.2",
+    "lodash": "^4.17.10",
     "prop-types": "^15.5.8",
     "react": "^15.5.4",
     "react-redux": "^5.0.4",
     "redux": "^3.6.0",
     "redux-actions": "^2.0.2",
-    "reselect": "^3.0.0"
+    "reselect": "^3.0.0",
+    "shallowequal": "^1.0.2"
   }
 }
