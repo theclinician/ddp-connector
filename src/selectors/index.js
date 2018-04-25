@@ -1,7 +1,15 @@
 import { createSelector, createSelectorCreator } from 'reselect';
-import { defaultMemoize } from './memoize.js';
+import createEntitiesSelectors from './createEntitiesSelectors';
+import createCurrentUserSelectors from './createCurrentUserSelectors';
+import { defaultMemoize } from '../utils/memoize';
+
+export {
+  createEntitiesSelectors,
+  createCurrentUserSelectors,
+};
 
 // subscriptions & queries
+
 const constant = x => () => x;
 const identity = x => x;
 const property = name => (_, x) => x && x[name];
@@ -90,104 +98,3 @@ export const makeGetQueriesValues = getQueryId => createSelector(
     return object;
   },
 );
-
-const makeGetAllById = (collection, prefix, Model) => (state) => {
-  let entities;
-  if (state[prefix].status &&
-      state[prefix].status.restoring) {
-    entities = state[prefix].status.entities &&
-               state[prefix].status.entities[collection];
-  } else {
-    entities = state[prefix].entities[collection];
-  }
-  if (Model && entities) {
-    const models = {};
-    Object.keys(entities).forEach((id) => {
-      models[id] = new Model(entities[id]);
-    });
-    return models;
-  }
-  return entities;
-};
-
-export const createEntitiesSelectors = (collection, { prefix = 'ddp', Model } = {}) => {
-  const getAllById = makeGetAllById(collection, prefix, Model);
-
-  const getOne = (
-    getId = (state, props) => props.id,
-  ) => createSelector(
-    getAllById,
-    getId,
-    (entities, id) => (entities && entities[id]) || undefined,
-  );
-
-  const getAll = createSelector(
-    getAllById,
-    entities => (entities ? Object.keys(entities).map(id => entities[id]) : []),
-  );
-
-  const find = (
-    accept = constant(true),
-    ...optionSelectors
-  ) => createArraySelector(
-    getAll,
-    ...optionSelectors,
-    (entities, ...options) => entities.filter(entity => accept(entity, ...options)),
-  );
-
-  const findAndMap = (
-    accept = constant(true),
-    transform = x => x,
-    ...optionSelectors
-  ) => createArraySelector(
-    find(accept, ...optionSelectors),
-    ...optionSelectors,
-    (entities, ...options) => entities.map(entity => transform(entity, ...options)),
-  );
-
-  const findOne = (
-    accept = constant(true),
-    getOptions = constant(null),
-  ) => createSelector(
-    getAll,
-    getOptions,
-    (entities, options) => entities.find(answersSheet => accept(answersSheet, options)),
-  );
-
-  return {
-    find,
-    findAndMap,
-    findOne,
-    getOne,
-    getAll,
-    getAllById,
-  };
-};
-
-export const createCurrentUserSelectors = (collection, { Model, prefix = 'ddp' } = {}) => {
-  const getCurrentId = state => state[prefix].currentUser.userId;
-  const getIsLoggingIn = state => state[prefix].currentUser.isLoggingIn;
-
-  const getUserEntity = createSelector(
-    makeGetAllById(collection, prefix, Model),
-    getCurrentId,
-    (users, userId) => users && users[userId],
-  );
-
-  const wrap = doc => (Model ? new Model(doc) : doc);
-  const getCurrent = createSelector(
-    state => state[prefix].currentUser.user,
-    getUserEntity,
-    (currentUser, userEntity) => currentUser && wrap({
-      ...currentUser,
-      ...userEntity,
-    }),
-  );
-
-  return {
-    getIsLoggingIn,
-    getCurrent,
-    getCurrentId,
-  };
-};
-
