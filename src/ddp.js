@@ -27,13 +27,19 @@ const ddp = ({
   queries: makeMapStateToQueries,
   messages = {},
   mutations = {},
-}, {
-  onMutationError,
-  renderLoader = defaultComponent => React.createElement(defaultComponent),
-  getResourceId = params => EJSON.stringify(params),
-  queriesUpdateDelay,
-  subscriptionsUpdateDelay,
-} = {}) => (Inner) => {
+  ...ddpOptions
+}, ddpOptionsMore) => (Inner) => {
+  const {
+    onMutationError,
+    renderLoader = defaultComponent => React.createElement(defaultComponent),
+    getResourceId = params => EJSON.stringify(params),
+    queriesUpdateDelay,
+    subscriptionsUpdateDelay,
+  } = {
+    ...ddpOptions,
+    ...ddpOptionsMore, // this is here to support legacy style, when options were split into two groups
+  };
+
   const propTypes = {
     subscriptions: PropTypes.array,
     queries: PropTypes.object,
