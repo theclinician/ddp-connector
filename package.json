@@ -1,6 +1,6 @@
 {
   "name": "@theclinician/ddp-connector",
-  "version": "0.5.0-rc5",
+  "version": "0.5.0-rc6",
   "description": "DDP client bindings for react-redux",
   "main": "./lib/index.js",
   "scripts": {
@@ -47,8 +47,10 @@
     "rimraf": "^2.6.1",
     "webpack": "^2.2.1"
   },
+  "peerDependencies": {
+    "@theclinician/ddp-client": "^0.5.0-rc2"
+  },
   "dependencies": {
-    "@theclinician/ddp-client": "^0.5.0-rc1",
     "@theclinician/toolbelt": "0.0.2",
     "ejson": "^2.1.2",
     "lodash": "^4.17.10",
