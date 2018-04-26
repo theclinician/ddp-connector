@@ -54,12 +54,13 @@
     "@theclinician/toolbelt": "0.0.2",
     "ejson": "^2.1.2",
     "lodash": "^4.17.10",
-    "prop-types": "^15.5.8",
-    "react": "^15.5.4",
-    "react-redux": "^5.0.4",
-    "redux": "^3.6.0",
-    "redux-actions": "^2.0.2",
-    "reselect": "^3.0.0",
+    "prop-types": "^15.6.1",
+    "react": "^16.3.2",
+    "react-redux": "^5.0.7",
+    "recompose": "^0.27.0",
+    "redux": "^3.7.2",
+    "redux-actions": "^2.3.0",
+    "reselect": "^3.0.1",
     "shallowequal": "^1.0.2"
   }
 }
