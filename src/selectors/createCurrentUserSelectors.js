@@ -15,7 +15,9 @@ const createCurrentUserSelectors = (collection, {
   Model,
   prefix = 'ddp',
 } = {}) => {
-  const userSelectorCreators = createEntitiesSelectors(collection, { Model, prefix });
+  // NOTE: We are intentially not passing Model here, because the actual model
+  //       will only be created later on, when entity is merged with ddp.currentUser.user object.
+  const userSelectorCreators = createEntitiesSelectors(collection, { prefix });
 
   const selectCurrentUserState = state => state[prefix] &&
                                           state[prefix].currentUser;
@@ -25,9 +27,31 @@ const createCurrentUserSelectors = (collection, {
     state => state && state.userId,
   );
 
+  const selectCurrentUser = createSelector(
+    selectCurrentUserState,
+    state => state && state.user,
+  );
+
   const selectCurrent = userSelectorCreators
-    ? userSelectorCreators.one.id(
-      selectCurrentUserId,
+    ? createSelector(
+      userSelectorCreators.one.id(
+        selectCurrentUserId,
+      ),
+      selectCurrentUser,
+      (user, rawUser) => {
+        if (user || rawUser) {
+          if (Model) {
+            return new Model({
+              ...rawUser,
+              ...user,
+            });
+          }
+          return {
+            ...rawUser,
+            ...user,
+          };
+        }
+      }
     )
     : noModelSpecified;
 

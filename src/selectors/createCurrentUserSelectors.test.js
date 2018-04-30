@@ -5,6 +5,9 @@ const state = {
   ddp: {
     currentUser: {
       userId: '1',
+      user: {
+        _id: '1',
+      },
       isLoggingIn: false,
     },
     entities: {
@@ -29,12 +32,25 @@ test('selects current userId with legacy api', () => {
 
 test('selects current user', () => {
   expect(selectors.user()(state)).toEqual({
+    _id: '1',
     name: 'Tomek',
+  });
+});
+
+test('selects current user even if entity is not present', () => {
+  expect(selectors.user()({
+    ddp: {
+      currentUser: state.ddp.currentUser,
+      entities: {},
+    },
+  })).toEqual({
+    _id: '1',
   });
 });
 
 test('selects current user with legacy api', () => {
   expect(selectors.getCurrent(state)).toEqual({
+    _id: '1',
     name: 'Tomek',
   });
 });
