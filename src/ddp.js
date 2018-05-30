@@ -15,6 +15,7 @@ import {
   createIdGenerator,
   wrapMapState,
 } from './utils';
+import createDeepEqualSelector from './selectors/createDeepEqualSelector';
 
 const uniqueId = createIdGenerator('listener.');
 const increase = (key, value) => prevState => ({
@@ -199,15 +200,25 @@ const ddp = ({
   const wrappedMapStateToSubscriptions = wrapMapState(makeMapStateToSubscriptions);
   const wrappedMapStateToQueries = wrapMapState(makeMapStateToQueries);
 
+  const defaultValue = x => y => y || x;
+
   return connect(
     () => {
       const getSubscriptionsReady = makeGetSubscriptionsReady((_, x) => getResourceId(x));
       const getQueriesValues = makeGetQueriesValues((_, x) => getResourceId(x));
       const getQueriesReady = makeGetQueriesReady((_, x) => getResourceId(x));
       //----------------------------------------------------------------------
+      const getSubscriptions = createDeepEqualSelector(
+        wrappedMapStateToSubscriptions,
+        defaultValue([]),
+      );
+      const getQueries = createDeepEqualSelector(
+        wrappedMapStateToQueries,
+        defaultValue({}),
+      );
       return (state, ownProps) => {
-        const subscriptions = wrappedMapStateToSubscriptions(state, ownProps) || [];
-        const queries = wrappedMapStateToQueries(state, ownProps) || {};
+        const subscriptions = getSubscriptions(state, ownProps);
+        const queries = getQueries(state, ownProps);
         return {
           ...getQueriesValues(state, queries),
           subscriptions,
