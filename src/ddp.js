@@ -16,8 +16,10 @@ import {
   wrapMapState,
 } from './utils';
 import createDeepEqualSelector from './selectors/createDeepEqualSelector';
+import createStructuredSelector from './selectors/createStructuredSelector';
 
 const uniqueId = createIdGenerator('listener.');
+const constant = x => () => x;
 const increase = (key, value) => prevState => ({
   ...prevState,
   [key]: (prevState[key] || 0) + value,
@@ -26,6 +28,7 @@ const increase = (key, value) => prevState => ({
 const ddp = ({
   subscriptions: makeMapStateToSubscriptions,
   queries: makeMapStateToQueries,
+  selectors: createSelectors,
   messages = {},
   mutations = {},
   ...ddpOptions
@@ -217,10 +220,14 @@ const ddp = ({
         wrappedMapStateToQueries,
         defaultValue({}),
       );
+      const getOtherValues = createSelectors
+        ? createStructuredSelector(createSelectors())
+        : constant({});
       return (state, ownProps) => {
         const subscriptions = getSubscriptions(state, ownProps);
         const queries = getQueries(state, ownProps);
         return {
+          ...getOtherValues(state, ownProps),
           ...getQueriesValues(state, queries),
           subscriptions,
           queries,
