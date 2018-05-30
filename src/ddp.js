@@ -87,6 +87,7 @@ const ddp = ({
       Object.keys(mutations).forEach((key) => {
         this.handlers[key] = (...args) => mutations[key]({
           ...this.props,
+          ...this.handlers,
           mutate,
         })(...args);
       });
