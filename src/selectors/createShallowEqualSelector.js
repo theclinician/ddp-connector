@@ -4,9 +4,9 @@ import {
   createSelectorCreator,
 } from 'reselect';
 
-const createDeepEqualSelector = createSelectorCreator(
+const createShallowEqualSelector = createSelectorCreator(
   defaultMemoize,
   shallowEqual,
 );
 
-export default createDeepEqualSelector;
+export default createShallowEqualSelector;

@@ -162,14 +162,14 @@ class DDPConnector extends EventEmitter {
     this.ddp.on('disconnected', () => dispatch(setConnected(false)));
 
     // subscriptions
-    this.subsManager.on('create', ({ id }) => dispatch(createSubscription({ id })));
+    this.subsManager.on('create', ({ id, params }) => dispatch(createSubscription({ id, params })));
     this.subsManager.on('delete', ({ id }) => dispatch(deleteSubscription({ id })));
 
     this.subsManager.on('ready', ({ id }) => dispatch(updateSubscription({ id, ready: true })));
     this.subsManager.on('error', ({ id }) => dispatch(updateSubscription({ id, error: true })));
 
     // queries
-    this.queryManager.on('create', ({ id }) => dispatch(createQuery({ id })));
+    this.queryManager.on('create', ({ id, params }) => dispatch(createQuery({ id, params })));
     this.queryManager.on('delete', ({ id }) => dispatch(deleteQuery({ id })));
 
     this.queryManager.on('ready', ({ id, value }) => dispatch(updateQuery({ id, value, ready: true })));

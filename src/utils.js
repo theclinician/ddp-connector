@@ -1,6 +1,3 @@
-import EJSON from 'ejson';
-
-export const getResourceId = params => EJSON.stringify(params);
 
 export const createIdGenerator = (prefix = '') => {
   let counter = 0;

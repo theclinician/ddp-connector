@@ -58,6 +58,7 @@
   "dependencies": {
     "@theclinician/toolbelt": "0.0.2",
     "ejson": "^2.1.2",
+    "functional-red-black-tree": "^1.0.1",
     "lodash": "^4.17.10",
     "prop-types": "^15.6.1",
     "react": "^16.3.2",

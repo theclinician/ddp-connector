@@ -45,7 +45,7 @@ class SharedResource {
       this.promise = new Promise((resolve, reject) => {
         this.destroy = this.create(once((err, res) => {
           if (err) {
-            // NOTE: Because if this "cleanup" a resource will be requested again on next try
+            // NOTE: Because of calling "cleanup" a resource will be requested again on next try
             //       after a failure. Though, in general, this may not be an optimal strategy.
             //       Instead we should probably throttle calls and limit the number of retires.
             this.cleanup();

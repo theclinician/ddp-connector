@@ -1,28 +1,36 @@
-import EJSON from 'ejson';
+import forEach from 'lodash/forEach';
+import isEmpty from 'lodash/isEmpty';
+import keys from 'lodash/keys';
 import { EventEmitter } from '@theclinician/toolbelt';
+import createTree from 'functional-red-black-tree';
 import SharedResource from './SharedResource.js';
 import { once } from './utils.js';
+import compare from './utils/compare';
 
 class ResourcesManager extends EventEmitter {
   constructor({
-    getResourceId = params => EJSON.stringify(params),
     resourcesFactory,
     cleanupDelay,
   } = {}) {
     super();
 
-    this.resources = new Map();
-    this.listeners = new Map();
+    this.counter = 0;
+    this.resourcesTree = createTree(compare);
+    this.listeners = {};
 
     this.resourcesFactory = resourcesFactory;
-    this.getResourceId = getResourceId;
     this.cleanupDelay = cleanupDelay;
   }
 
+  nextUniqueId() {
+    this.counter += 1;
+    return this.counter.toString();
+  }
+
   cleanupResources() {
-    for (const resource of this.resources.values()) {
+    this.resourcesTree.forEach((params, resource) => {
       resource.maybeCleanup();
-    }
+    });
   }
 
   getCleanupDelay(params) {
@@ -35,10 +43,10 @@ class ResourcesManager extends EventEmitter {
   }
 
   getOrCreateResource(params) {
-    const id = this.getResourceId(params);
-    let resource = this.resources.get(id);
+    let resource = this.resourcesTree.get(params);
     if (!resource) {
-      this.emit('create', { id });
+      const id = this.nextUniqueId();
+      this.emit('create', { id, params });
       resource = new SharedResource({
         create: (cb) => {
           let handle = this.resourcesFactory(params, once((error, value) => {
@@ -54,56 +62,59 @@ class ResourcesManager extends EventEmitter {
               handle.stop();
               handle = null;
             }
-            this.resources.delete(id);
-            this.emit('delete', { id });
+            this.resourcesTree = this.resourcesTree.remove(params);
+            this.emit('delete', { id, params });
           };
         },
         cleanupDelay: this.getCleanupDelay(params),
       });
-      this.resources.set(id, resource);
+      resource.id = id;
+      resource.params = params;
+      this.resourcesTree = this.resourcesTree.insert(params, resource);
     }
-    return { id, resource };
+    return { id: resource.id, resource };
   }
 
   getOrCreateListener(id) {
-    const listener = this.listeners.get(id) || {
-      byResourceId: new Map(),
+    const listener = this.listeners[id] || {
+      byResourceId: {},
     };
-    if (!this.listeners.has(id)) {
-      this.listeners.set(id, listener);
+    if (!this.listeners[id]) {
+      this.listeners[id] = listener;
     }
     return listener;
   }
 
   updateRequests(listenerId, requests = []) {
-    const promises = new Map();
+    const promises = {};
     const listener = this.getOrCreateListener(listenerId);
     requests.forEach((params) => {
       if (!params) {
         return;
       }
       const { id, resource } = this.getOrCreateResource(params);
-      if (!listener.byResourceId.has(id)) {
-        listener.byResourceId.set(id, resource.require());
+      if (!listener.byResourceId[id]) {
+        listener.byResourceId[id] = resource.require();
       }
-      const promise = listener.byResourceId.get(id).promise;
+      const promise = listener.byResourceId[id].promise;
       promise.catch((err) => {
-        console.error(`While requesting resource ${id}`, err);
+        console.error(`While requesting resource id ${id}`, params, err);
       });
-      promises.set(id, promise);
+      promises[id] = promise;
     });
 
-    for (const [id, { release }] of listener.byResourceId.entries()) {
-      if (!promises.has(id)) {
+    forEach(listener.byResourceId, ({ release }, id) => {
+      if (!promises[id]) {
         release();
-        listener.byResourceId.delete(id);
+        delete listener.byResourceId[id];
       }
-    }
-    if (promises.size === 0) {
-      this.listeners.delete(listenerId);
+    });
+
+    if (isEmpty(promises)) {
+      delete this.listeners[listenerId];
     }
 
-    return promises.values();
+    return keys(promises);
   }
 }
 
