@@ -1,8 +1,8 @@
-import shallowEqual from 'shallowequal';
 import {
   defaultMemoize,
   createSelectorCreator,
 } from 'reselect';
+import shallowEqual from '../utils/shallowEqual';
 
 const createShallowEqualSelector = createSelectorCreator(
   defaultMemoize,

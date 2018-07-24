@@ -20,6 +20,10 @@ describe('Test utility - memoizeMapValues', () => {
     testContext.shallowCopy = memoizeMapValues(shallowCopy);
   });
 
+  test('preserves empty array', () => {
+    expect(testContext.identity([])).toEqual([]);
+  });
+
   describe('Given an empty object', () => {
     test('persists identity mapping', () => {
       const result1 = testContext.identity({});

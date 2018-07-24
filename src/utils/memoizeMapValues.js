@@ -1,6 +1,6 @@
 import map from 'lodash/map';
 import keyBy from 'lodash/keyBy';
-import shallowEqual from 'shallowequal';
+import shallowEqual from '../utils/shallowEqual';
 import stableMapValues from './stableMapValues';
 import defaultIsEqual from './defaultIsEqual';
 
