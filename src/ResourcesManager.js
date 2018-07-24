@@ -1,6 +1,7 @@
 import forEach from 'lodash/forEach';
 import isEmpty from 'lodash/isEmpty';
 import keys from 'lodash/keys';
+import has from 'lodash/has';
 import { EventEmitter } from '@theclinician/toolbelt';
 import createTree from 'functional-red-black-tree';
 import SharedResource from './SharedResource.js';
@@ -85,10 +86,11 @@ class ResourcesManager extends EventEmitter {
     return listener;
   }
 
-  updateRequests(listenerId, requests = []) {
+  updateRequests(listenerId, requests) {
     const promises = {};
     const listener = this.getOrCreateListener(listenerId);
-    requests.forEach((params) => {
+
+    forEach(requests, (params) => {
       if (!params) {
         return;
       }
@@ -104,7 +106,7 @@ class ResourcesManager extends EventEmitter {
     });
 
     forEach(listener.byResourceId, ({ release }, id) => {
-      if (!promises[id]) {
+      if (!has(promises, id)) {
         release();
         delete listener.byResourceId[id];
       }

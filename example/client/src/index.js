@@ -23,6 +23,9 @@ const ddpClient = new DDPClient({
 const ddpConnector = new DDPConnector({
   ddpClient,
   debug: true,
+  transformSubscriptionParams: (params, options) => {
+    return params;
+  },
   getMessageChannel(collection) {
     return collection.indexOf('messages.') === 0;
   },

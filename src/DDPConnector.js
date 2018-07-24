@@ -25,6 +25,8 @@ import {
   replaceEntities,
 } from './actions.js';
 
+const identity = x => x;
+
 class DDPConnector extends EventEmitter {
   constructor({
     debug,
@@ -34,6 +36,8 @@ class DDPConnector extends EventEmitter {
     resourceUpdateDelay = 100,
     getMessageChannel = null,
     defaultLoaderComponent = () => React.createElement('div', {}, ['Loading ...']),
+    transformSubscriptionParams = identity,
+    transformQueryParams = identity,
   }) {
     super();
 
@@ -76,8 +80,8 @@ class DDPConnector extends EventEmitter {
 
     this.subsManager = new ResourcesManager({
       cleanupDelay,
-      resourcesFactory: ({ name, params }, cb) => {
-        let handle = this.ddp.subscribe(name, params, {
+      resourcesFactory: ({ name, params, options }, cb) => {
+        let handle = this.ddp.subscribe(name, transformSubscriptionParams(params, options), {
           onReady: () => cb && this.afterFlush(cb),
           // NOTE: This is problematic because onStop can also be called
           //       when subscription is stopped with "handle.stop()"!
@@ -98,10 +102,10 @@ class DDPConnector extends EventEmitter {
 
     this.queryManager = new ResourcesManager({
       cleanupDelay,
-      resourcesFactory: ({ name, params }, cb) => {
+      resourcesFactory: ({ name, params, options }, cb) => {
         // NOTE: In this particular case we don't really need to wait until flush,
         //       so we call "apply" on ddp object directly.
-        this.ddp.apply(name, params, {}, cb);
+        this.ddp.apply(name, transformQueryParams(params, options), {}, cb);
         return {
           stop: () => {
             cb = null; // eslint-disable-line no-param-reassign

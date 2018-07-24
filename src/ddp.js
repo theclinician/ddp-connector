@@ -2,10 +2,10 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import every from 'lodash/every';
-import values from 'lodash/values';
 import forEach from 'lodash/forEach';
 import isPlainObject from 'lodash/isPlainObject';
 import map from 'lodash/map';
+import isEmpty from 'lodash/isEmpty';
 import {
   debounce,
 } from '@theclinician/toolbelt';
@@ -26,7 +26,7 @@ const increase = (key, value) => prevState => ({
   [key]: (prevState[key] || 0) + value,
 });
 
-const createSeubscriptionsSelector = createResourcesSelectorFactory('subscriptions');
+const createSubscriptionsSelector = createResourcesSelectorFactory('subscriptions');
 const createQueriesSelector = createResourcesSelectorFactory('queries');
 
 const ddp = ({
@@ -39,6 +39,7 @@ const ddp = ({
 }, ddpOptionsMore) => (Inner) => {
   const {
     onMutationError,
+    loader,
     renderLoader = defaultComponent => React.createElement(defaultComponent),
     queriesUpdateDelay,
     subscriptionsUpdateDelay,
@@ -47,16 +48,27 @@ const ddp = ({
     ...ddpOptionsMore, // this is here to support legacy style, when options were split into two groups
   };
 
+  if (!isEmpty(ddpOptionsMore)) {
+    console.warn('Please specify ddp options in a single object only; ddp({}, {}) syntax is deprecated.');
+  }
+
+  const collection = PropTypes.oneOfType([
+    PropTypes.objectOf(
+      PropTypes.any,
+    ),
+    PropTypes.arrayOf(
+      PropTypes.any,
+    ),
+  ]);
+
   const propTypes = {
-    subscriptions: PropTypes.array,
-    queries: PropTypes.object,
+    requestedSubscriptions: collection,
+    requestedQueries: collection,
     subscriptionsReady: PropTypes.bool,
     queriesReady: PropTypes.bool,
   };
 
   const defaultProps = {
-    subscriptions: [],
-    queries: {},
     subscriptionsReady: true,
     queriesReady: true,
   };
@@ -116,7 +128,7 @@ const ddp = ({
       );
 
       this.updateQueries = debounce(
-        queries => this.ddpConnector.queryManager.updateRequests(this.id, values(queries)),
+        queries => this.ddpConnector.queryManager.updateRequests(this.id, queries),
         {
           ms: queriesUpdateDelay !== undefined ? queriesUpdateDelay : this.ddpConnector.resourceUpdateDelay,
         },
@@ -125,13 +137,13 @@ const ddp = ({
       this.messagesListeners = map(this.messageHandlers, (messageHandler, channel) =>
         this.ddpConnector.on(`messages.${channel}`, messageHandler));
 
-      this.updateSubscriptions(this.props.subscriptions);
-      this.updateQueries(this.props.queries);
+      this.updateSubscriptions(this.props.requestedSubscriptions);
+      this.updateQueries(this.props.requestedQueries);
     }
 
     componentDidUpdate() {
-      this.updateSubscriptions(this.props.subscriptions);
-      this.updateQueries(this.props.queries);
+      this.updateSubscriptions(this.props.requestedSubscriptions);
+      this.updateQueries(this.props.requestedQueries);
     }
 
     componentWillUnmount() {
@@ -165,19 +177,22 @@ const ddp = ({
       const {
         subscriptionsReady,
         queriesReady,
-        queries,
-        subscriptions,
+        requestedSubscriptions,
+        requestedQueries,
         ...other
       } = this.props;
       const mutationsReady = numberOfPendingMutations <= 0;
-      if (renderLoader &&
+      const Loader = loader === undefined ? ddpConnector.getLoaderComponent() : loader;
+      if (
+        Loader &&
+        renderLoader &&
         (
           !subscriptionsReady ||
           !mutationsReady ||
           !queriesReady
         )
       ) {
-        return renderLoader(ddpConnector.getLoaderComponent(), {
+        return renderLoader(Loader, {
           ...other,
           subscriptionsReady,
           mutationsReady,
@@ -203,44 +218,52 @@ const ddp = ({
   }
 
   const defaultValue = x => y => y || x;
+  const setResourceId = (resource, id) => ({ id, ...resource });
 
   return connect(
     () => {
-      const selectSubscriptions = wrapMapState(makeMapStateToSubscriptions);
-      const selectQueries = wrapMapState(makeMapStateToQueries);
+      const selectRequestedSubscriptions = wrapMapState(makeMapStateToSubscriptions);
+      const selectRequestedQueries = wrapMapState(makeMapStateToQueries);
+
+      const selectSubscriptions = createSubscriptionsSelector(selectRequestedSubscriptions, setResourceId);
+      const selectQueries = createQueriesSelector(selectRequestedQueries, setResourceId);
+
       const getSubscriptionsReady = createShallowEqualSelector(
-        createSeubscriptionsSelector(selectSubscriptions),
-        subscriptions => every(subscriptions, sub => sub && sub.ready),
+        selectSubscriptions,
+        subscriptions => every(subscriptions, 'ready'),
       );
       const getQueriesReady = createShallowEqualSelector(
-        createQueriesSelector(selectQueries),
-        queries => every(queries, query => query && query.ready),
+        selectQueries,
+        queries => every(queries, 'ready'),
       );
       const getQueriesValues = createShallowEqualSelector(
-        createQueriesSelector(selectQueries),
-        queries => map(queries, query => query && query.value),
+        selectQueries,
+        queries => map(queries, 'value'),
       );
       //-----------------------------------------------
       const getSubscriptions = createDeepEqualSelector(
-        selectSubscriptions,
+        selectRequestedSubscriptions,
         defaultValue([]),
       );
       const getQueries = createDeepEqualSelector(
-        selectQueries,
+        selectRequestedQueries,
         defaultValue({}),
       );
       const getOtherValues = createSelectors
-        ? createStructuredSelector(createSelectors())
+        ? createStructuredSelector(createSelectors({
+          subscriptions: selectSubscriptions,
+          queries: selectQueries,
+        }))
         : constant({});
       return (state, ownProps) => {
-        const subscriptions = getSubscriptions(state, ownProps);
-        const queries = getQueries(state, ownProps);
+        const requestedSubscriptions = getSubscriptions(state, ownProps);
+        const requestedQueries = getQueries(state, ownProps);
         const queriesValues = getQueriesValues(state);
         return {
           ...getOtherValues(state, ownProps),
           ...isPlainObject(queriesValues) && queriesValues, // it can be an array as well
-          subscriptions,
-          queries,
+          requestedSubscriptions,
+          requestedQueries,
           subscriptionsReady: getSubscriptionsReady(state, ownProps),
           queriesReady: getQueriesReady(state, ownProps),
         };

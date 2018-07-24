@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import {
-  createStructuredSelector,
+  createStructuredSelector, createSelector,
 } from 'reselect';
 import { ddp } from '@theclinician/ddp-connector';
 import { connect } from 'react-redux';
@@ -22,9 +22,19 @@ import TodoList from '../common/models/TodoList.js';
 const Lists = compose(
   withState('title', 'setTitle', ''),
   ddp({
-    subscriptions: [
-      allLists.withParams(),
-    ],
+    subscriptions: {
+      lists: allLists.withParams(undefined, {
+        controlId: 'controlId',
+      }),
+    },
+    selectors: ({
+      subscriptions,
+    }) => ({
+      subId: createSelector(
+        subscriptions,
+        subs => subs.lists && subs.lists.id,
+      ),
+    }),
   }),
   connect(
     createStructuredSelector({

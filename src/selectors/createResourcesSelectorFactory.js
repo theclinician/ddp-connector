@@ -4,7 +4,9 @@ import {
 } from 'reselect';
 import forEach from 'lodash/forEach';
 import compare from '../utils/compare';
-import stableMapValues from '../utils/stableMapValues';
+import memoizeMapValues from '../utils/memoizeMapValues';
+
+const identity = x => x;
 
 function createResourcesSelectorFactory(storageKey) {
   let resourcesTree = createTree(compare);
@@ -24,19 +26,19 @@ function createResourcesSelectorFactory(storageKey) {
     return resourcesDb;
   };
 
-  return selectResources => createSelector(
-    selectResourcesDb,
+  return (selectResources, mapValue = identity) => createSelector(
+    createSelector(
+      selectResourcesDb,
+      resourcesDb => memoizeMapValues((params) => {
+        const resource = resourcesTree.get(params);
+        if (resource) {
+          return mapValue(resourcesDb[resource.id], resource.id);
+        }
+        return mapValue(null);
+      }),
+    ),
     selectResources,
-    (resourcesDb, resources) => stableMapValues(resources, (params) => {
-      if (!params) {
-        return null;
-      }
-      const resource = resourcesTree.get(params);
-      if (resource) {
-        return resourcesDb[resource.id];
-      }
-      return null;
-    }),
+    (mapValues, resources) => mapValues(resources),
   );
 }
 
