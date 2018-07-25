@@ -5,6 +5,8 @@ import every from 'lodash/every';
 import forEach from 'lodash/forEach';
 import isPlainObject from 'lodash/isPlainObject';
 import map from 'lodash/map';
+import isArray from 'lodash/isArray';
+import mapValues from 'lodash/mapValues';
 import isEmpty from 'lodash/isEmpty';
 import {
   debounce,
@@ -238,7 +240,14 @@ const ddp = ({
       );
       const getQueriesValues = createShallowEqualSelector(
         selectQueries,
-        queries => map(queries, 'value'),
+        (queries) => {
+          if (isArray(queries)) {
+            return {
+              queries: map(queries, 'value'),
+            };
+          }
+          return mapValues(queries, 'value');
+        },
       );
       //-----------------------------------------------
       const getSubscriptions = createDeepEqualSelector(
@@ -258,7 +267,7 @@ const ddp = ({
       return (state, ownProps) => {
         const requestedSubscriptions = getSubscriptions(state, ownProps);
         const requestedQueries = getQueries(state, ownProps);
-        const queriesValues = getQueriesValues(state);
+        const queriesValues = getQueriesValues(state, ownProps);
         return {
           ...getOtherValues(state, ownProps),
           ...isPlainObject(queriesValues) && queriesValues, // it can be an array as well

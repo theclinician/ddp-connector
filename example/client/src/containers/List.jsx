@@ -19,6 +19,7 @@ import {
 } from '../common/api/Todos';
 import {
   oneList,
+  getListStats,
 } from '../common/api/TodoLists';
 import {
   callMethod,
@@ -57,6 +58,9 @@ const Lists = compose(
       oneList.withParams({ listId }),
       todosInList.withParams({ listId }),
     ],
+    queries: (state, { listId }) => ({
+      stats: getListStats.withParams({ listId }),
+    }),
   }),
   connect(
     createStructuredSelector({
@@ -85,6 +89,7 @@ const Lists = compose(
   list,
   todos,
   name,
+  stats,
   setName,
   onAddTodo,
   onChangeName,
@@ -92,7 +97,13 @@ const Lists = compose(
 }) => (
   <div>
     <Link to="/lists/">Back</Link>
-    <h1>{list && list.getTitle()}</h1>
+    <h1>
+      {list && list.getTitle()}
+      {stats && <span>
+        &nbsp;({stats.done}/{stats.done + stats.notDone})
+      </span>}
+    </h1>
+    
     <ul>
       {todos.map(todo => (
         <ListItem key={todo._id} todo={todo} onUpdate={onUpdateTodo} />

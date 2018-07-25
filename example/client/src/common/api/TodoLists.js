@@ -36,3 +36,11 @@ export const oneList = new ApiSpec({
     listId: { type: String, regEx: Schema.RegEx.Id },
   }),
 });
+
+export const getListStats = new ApiSpec({
+  name: 'api.TodoLists.getListStats',
+  schema: new Schema({
+    listId: { type: String, regEx: Schema.RegEx.Id },
+  }),
+});
+

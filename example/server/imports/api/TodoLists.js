@@ -1,4 +1,5 @@
 import TodoLists from '/imports/collections/TodoLists';
+import Todos from '/imports/collections/Todos';
 import * as api from '/imports/common/api/TodoLists';
 import Count from '/imports/common/models/Count';
 import publish from './publish';
@@ -62,5 +63,16 @@ publish(api.allLists, {
 publish(api.oneList, {
   run({ listId }) {
     return TodoLists.find({ _id: listId });
+  },
+});
+
+implement(api.getListStats, {
+  run({
+    listId,
+  }) {
+    return {
+      done: Todos.find({ listId, done: true }).count(),
+      notDone: Todos.find({ listId, done: { $ne: true } }).count(),
+    };
   },
 });
