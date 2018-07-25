@@ -34,23 +34,24 @@ class ResourcesManager extends EventEmitter {
     });
   }
 
-  getCleanupDelay(params) {
+  getCleanupDelay(request) {
     if (typeof this.cleanupDelay === 'function') {
-      return this.cleanupDelay(params);
+      return this.cleanupDelay(request);
     } else if (typeof this.cleanupDelay === 'number') {
       return this.cleanupDelay;
     }
     return 0;
   }
 
-  getOrCreateResource(params) {
-    let resource = this.resourcesTree.get(params);
+  getOrCreateResource(request) {
+    let resource = this.resourcesTree.get(request);
     if (!resource) {
       const id = this.nextUniqueId();
-      this.emit('create', { id, params });
+      const requestMeta = { id };
+      this.emit('create', { id, request });
       resource = new SharedResource({
         create: (cb) => {
-          let handle = this.resourcesFactory(params, once((error, value) => {
+          let handle = this.resourcesFactory(request, requestMeta, once((error, value) => {
             if (!error) {
               this.emit('ready', { id, value });
             } else {
@@ -63,15 +64,15 @@ class ResourcesManager extends EventEmitter {
               handle.stop();
               handle = null;
             }
-            this.resourcesTree = this.resourcesTree.remove(params);
-            this.emit('delete', { id, params });
+            this.resourcesTree = this.resourcesTree.remove(request);
+            this.emit('delete', { id, request });
           };
         },
-        cleanupDelay: this.getCleanupDelay(params),
+        cleanupDelay: this.getCleanupDelay(request),
       });
       resource.id = id;
-      resource.params = params;
-      this.resourcesTree = this.resourcesTree.insert(params, resource);
+      resource.request = request;
+      this.resourcesTree = this.resourcesTree.insert(request, resource);
     }
     return { id: resource.id, resource };
   }
@@ -90,17 +91,17 @@ class ResourcesManager extends EventEmitter {
     const promises = {};
     const listener = this.getOrCreateListener(listenerId);
 
-    forEach(requests, (params) => {
-      if (!params) {
+    forEach(requests, (request) => {
+      if (!request) {
         return;
       }
-      const { id, resource } = this.getOrCreateResource(params);
+      const { id, resource } = this.getOrCreateResource(request);
       if (!listener.byResourceId[id]) {
         listener.byResourceId[id] = resource.require();
       }
       const promise = listener.byResourceId[id].promise;
       promise.catch((err) => {
-        console.error(`While requesting resource id ${id}`, params, err);
+        console.error(`While requesting resource id ${id}`, request, err);
       });
       promises[id] = promise;
     });

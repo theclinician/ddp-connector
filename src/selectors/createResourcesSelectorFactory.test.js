@@ -10,13 +10,13 @@ describe('Test createResourcesSelectorFactory', () => {
     ddp: {
       queries: {
         q1: {
-          params: {
+          request: {
             x: 1,
             y: 1,
           },
         },
         q2: {
-          params: {
+          request: {
             x: 2,
             y: 2,
           },
@@ -30,7 +30,7 @@ describe('Test createResourcesSelectorFactory', () => {
       queries: {
         q1: state.ddp.queries.q1,
         q3: {
-          params: {
+          request: {
             x: 3,
             y: 3,
           },
@@ -64,7 +64,7 @@ describe('Test createResourcesSelectorFactory', () => {
       x: 1,
       y: 1,
     }]))(state)).toEqual([{
-      params: {
+      request: {
         x: 1,
         y: 1,
       },
@@ -79,7 +79,7 @@ describe('Test createResourcesSelectorFactory', () => {
       },
     }))(state)).toEqual({
       query: {
-        params: {
+        request: {
           x: 1,
           y: 1,
         },
@@ -92,7 +92,7 @@ describe('Test createResourcesSelectorFactory', () => {
       x: 2,
       y: 2,
     }]))(state)).toEqual([{
-      params: {
+      request: {
         x: 2,
         y: 2,
       },

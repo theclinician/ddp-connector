@@ -36,8 +36,7 @@ class DDPConnector extends EventEmitter {
     resourceUpdateDelay = 100,
     getMessageChannel = null,
     defaultLoaderComponent = () => React.createElement('div', {}, ['Loading ...']),
-    transformSubscriptionParams = identity,
-    transformQueryParams = identity,
+    transformRequest = identity,
   }) {
     super();
 
@@ -80,8 +79,15 @@ class DDPConnector extends EventEmitter {
 
     this.subsManager = new ResourcesManager({
       cleanupDelay,
-      resourcesFactory: ({ name, params, options }, cb) => {
-        let handle = this.ddp.subscribe(name, transformSubscriptionParams(params, options), {
+      resourcesFactory: (request, requestMeta, cb) => {
+        const {
+          name,
+          params,
+        } = transformRequest(request, {
+          type: DDPConnector.REQUEST_TYPE__SUBSCRIPTION,
+          ...requestMeta,
+        });
+        let handle = this.ddp.subscribe(name, params, {
           onReady: () => cb && this.afterFlush(cb),
           // NOTE: This is problematic because onStop can also be called
           //       when subscription is stopped with "handle.stop()"!
@@ -102,10 +108,17 @@ class DDPConnector extends EventEmitter {
 
     this.queryManager = new ResourcesManager({
       cleanupDelay,
-      resourcesFactory: ({ name, params, options }, cb) => {
+      resourcesFactory: (request, requestMeta, cb) => {
+        const {
+          name,
+          params,
+        } = transformRequest(request, {
+          type: DDPConnector.REQUEST_TYPE__QUERY,
+          ...requestMeta,
+        });
         // NOTE: In this particular case we don't really need to wait until flush,
         //       so we call "apply" on ddp object directly.
-        this.ddp.apply(name, transformQueryParams(params, options), {}, cb);
+        this.ddp.apply(name, params, {}, cb);
         return {
           stop: () => {
             cb = null; // eslint-disable-line no-param-reassign
@@ -166,14 +179,14 @@ class DDPConnector extends EventEmitter {
     this.ddp.on('disconnected', () => dispatch(setConnected(false)));
 
     // subscriptions
-    this.subsManager.on('create', ({ id, params }) => dispatch(createSubscription({ id, params })));
+    this.subsManager.on('create', ({ id, request }) => dispatch(createSubscription({ id, request })));
     this.subsManager.on('delete', ({ id }) => dispatch(deleteSubscription({ id })));
 
     this.subsManager.on('ready', ({ id }) => dispatch(updateSubscription({ id, ready: true })));
     this.subsManager.on('error', ({ id }) => dispatch(updateSubscription({ id, error: true })));
 
     // queries
-    this.queryManager.on('create', ({ id, params }) => dispatch(createQuery({ id, params })));
+    this.queryManager.on('create', ({ id, request }) => dispatch(createQuery({ id, request })));
     this.queryManager.on('delete', ({ id }) => dispatch(deleteQuery({ id })));
 
     this.queryManager.on('ready', ({ id, value }) => dispatch(updateQuery({ id, value, ready: true })));
@@ -254,5 +267,7 @@ class DDPConnector extends EventEmitter {
 }
 
 DDPConnector.models = {};
+DDPConnector.REQUEST_TYPE__SUBSCRIPTION = 'subscription';
+DDPConnector.REQUEST_TYPE__QUERY = 'query';
 
 export default DDPConnector;

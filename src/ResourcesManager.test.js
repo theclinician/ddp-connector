@@ -2,7 +2,7 @@
 /* eslint prefer-arrow-callback: "off", no-unused-expressions: "off" */
 import ResourcesManager from './ResourcesManager.js';
 
-const resourcesFactory = (params, cb) => cb(null, params);
+const resourcesFactory = (request, requestMeta, cb) => cb(null, request);
 
 describe('Test ResourcesManager', () => {
   let manager;

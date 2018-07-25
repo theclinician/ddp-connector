@@ -19,25 +19,25 @@ function createResourcesSelectorFactory(storageKey) {
       }
     });
     forEach(resourcesDb, (resource, id) => {
-      if (!resourcesTree.get(resource.params)) {
-        resourcesTree = resourcesTree.insert(resource.params, { id });
+      if (!resourcesTree.get(resource.request)) {
+        resourcesTree = resourcesTree.insert(resource.request, { id });
       }
     });
     return resourcesDb;
   };
 
-  return (selectResources, mapValue = identity) => createSelector(
+  return (selectRequests, mapValue = identity) => createSelector(
     createSelector(
       selectResourcesDb,
-      resourcesDb => memoizeMapValues((params) => {
-        const resource = resourcesTree.get(params);
+      resourcesDb => memoizeMapValues((request) => {
+        const resource = resourcesTree.get(request);
         if (resource) {
           return mapValue(resourcesDb[resource.id], resource.id);
         }
         return mapValue(null);
       }),
     ),
-    selectResources,
+    selectRequests,
     (mapValues, resources) => mapValues(resources),
   );
 }
