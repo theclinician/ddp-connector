@@ -23,6 +23,7 @@ import {
 } from '../common/api/TodoLists';
 import {
   callMethod,
+  refreshQuery,
 } from '../common/utils/actions.js';
 import Todo from '../common/models/Todo.js';
 import TodoList from '../common/models/TodoList.js';
@@ -74,10 +75,12 @@ const Lists = compose(
     }) => ({
       onAddTodo: () =>
         dispatch(callMethod(insert, { listId, name }))
-          .then(() => setName('')),
+          .then(() => setName(''))
+          .then(() => dispatch(refreshQuery(getListStats, { listId }))),
 
       onUpdateTodo: ({ todoId, name, done }) =>
-        dispatch(callMethod(update, { todoId, done, name })),
+        dispatch(callMethod(update, { todoId, done, name }))
+          .then(() => dispatch(refreshQuery(getListStats, { listId }))),
     }),
   ),
   withHandlers({
