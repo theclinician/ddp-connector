@@ -30,6 +30,15 @@ function createResourcesSelectorFactory(storageKey) {
     createSelector(
       selectResourcesDb,
       resourcesDb => memoizeMapValues((request) => {
+        if (!request) {
+          return mapValue({
+            // NOTE: If resource is not required, we consider it "ready".
+            //       We use this to distinguish between situation when
+            //       resource is not present in storage yet vs. resource
+            //       was never requested in the first place.
+            ready: true,
+          });
+        }
         const resource = resourcesTree.get(request);
         if (resource) {
           return mapValue(resourcesDb[resource.id], resource.id);

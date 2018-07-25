@@ -55,8 +55,10 @@ describe('Test createResourcesSelectorFactory', () => {
     expect(factory(constant({}))(state)).toEqual({});
   });
 
-  test('selects null if nothing is requested', () => {
-    expect(factory(constant([null]))(state)).toEqual([null]);
+  test('selects "ready" if nothing is requested', () => {
+    expect(factory(constant([null]))(state)).toEqual([{
+      ready: true,
+    }]);
   });
 
   test('selects query based on params', () => {

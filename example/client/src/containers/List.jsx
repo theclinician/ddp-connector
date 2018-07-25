@@ -58,9 +58,11 @@ const Lists = compose(
     subscriptions: (state, { listId }) => [
       oneList.withParams({ listId }),
       todosInList.withParams({ listId }),
+      null, // should be treated as always ready
     ],
     queries: (state, { listId }) => ({
       stats: getListStats.withParams({ listId }),
+      pleaseIgnoreThisOne: null, // should be treated as always ready
     }),
   }),
   connect(
