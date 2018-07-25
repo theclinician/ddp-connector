@@ -232,6 +232,10 @@ class DDPConnector extends EventEmitter {
     return this.delayUntilFlush(this.ddp.apply(name, params, options));
   }
 
+  refreshQuery(request) {
+    return this.queryManager.refresh(request);
+  }
+
   login(...args) {
     return this.delayUntilFlush(this.ddp.login(...args));
   }

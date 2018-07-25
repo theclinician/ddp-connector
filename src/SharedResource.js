@@ -39,22 +39,29 @@ class SharedResource {
     this.promise = null;
   }
 
+  refresh() {
+    this.promise = new Promise((resolve, reject) => {
+      this.destroy = this.create(once((err, res) => {
+        if (err) {
+          // NOTE: Because of calling "cleanup" a resource will be requested again on next try
+          //       after a failure. Though, in general, this may not be an optimal strategy.
+          //       Instead we should probably throttle calls and limit the number of retires.
+          this.cleanup();
+          reject(err);
+        } else {
+          resolve(res);
+        }
+      }));
+    });
+    return {
+      promise: this.promise,
+    };
+  }
+
   require() {
     let promise = this.promise;
     if (!promise) {
-      this.promise = new Promise((resolve, reject) => {
-        this.destroy = this.create(once((err, res) => {
-          if (err) {
-            // NOTE: Because of calling "cleanup" a resource will be requested again on next try
-            //       after a failure. Though, in general, this may not be an optimal strategy.
-            //       Instead we should probably throttle calls and limit the number of retires.
-            this.cleanup();
-            reject(err);
-          } else {
-            resolve(res);
-          }
-        }));
-      });
+      this.promise = this.refresh().promise;
       promise = this.promise;
     }
 

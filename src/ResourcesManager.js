@@ -87,6 +87,14 @@ class ResourcesManager extends EventEmitter {
     return listener;
   }
 
+  refresh(request) {
+    const resource = this.resourcesTree.get(request);
+    if (!resource) {
+      return Promise.reject(new Error(`Unknown resource ${request ? request.name : '[NO_NAME]'}`));
+    }
+    return resource.refresh();
+  }
+
   updateRequests(listenerId, requests) {
     const promises = {};
     const listener = this.getOrCreateListener(listenerId);
