@@ -1,5 +1,8 @@
 import DDPClient from '@theclinician/ddp-client';
 import DDPConnector, { ddpReducer } from '@theclinician/ddp-connector';
+import map from 'lodash/map';
+import get from 'lodash/get';
+import mapValues from 'lodash/mapValues';
 import {
   persistState,
 } from 'redux-devtools';
@@ -23,8 +26,19 @@ const ddpClient = new DDPClient({
 const ddpConnector = new DDPConnector({
   ddpClient,
   debug: true,
-  transformSubscriptionParams: (params, options) => {
-    return params;
+  transformRequest: (request, meta) => {
+    return {
+      ...request,
+      params: map(request.params, (fields) => mapValues(fields, (value, name) => {
+        if (typeof value === 'string') {
+          const match = /^\$meta\.(.*)/.exec(value);
+          if (match) {
+            return get(meta, match[1]);
+          }
+        }
+        return value;
+      })),
+    };
   },
   getMessageChannel(collection) {
     return collection.indexOf('messages.') === 0;

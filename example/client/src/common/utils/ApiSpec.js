@@ -12,7 +12,7 @@ class ApiSpec {
     return this.name;
   }
 
-  withParams(params, options) {
+  withParams(params) {
     if (this.schema) {
       try {
         this.schema.validate(params); // this may throw an error!
@@ -25,7 +25,6 @@ class ApiSpec {
     return {
       name: this.getName(),
       params: params !== undefined ? [params] : [],
-      ...options && { options },
     };
   }
 

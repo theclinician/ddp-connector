@@ -16,23 +16,26 @@ import {
 } from '../common/api/TodoLists';
 import {
   callMethod,
-} from '../common/utils/actions.js';
-import TodoList from '../common/models/TodoList.js';
+} from '../common/utils/actions';
+import TodoList from '../common/models/TodoList';
+import Count from '../common/models/Count';
 
 const Lists = compose(
   withState('title', 'setTitle', ''),
   ddp({
     subscriptions: {
-      lists: allLists.withParams(undefined, {
-        controlId: 'controlId',
+      lists: allLists.withParams({
+        controlId: '$meta.id',
       }),
     },
     selectors: ({
       subscriptions,
     }) => ({
-      subId: createSelector(
-        subscriptions,
-        subs => subs.lists && subs.lists.id,
+      total: Count.selectors.getOne(
+        createSelector(
+          subscriptions,
+          subs => subs.lists && subs.lists.id,
+        ),
       ),
     }),
   }),
@@ -54,12 +57,14 @@ const Lists = compose(
 )(({
   lists,
   title,
+  total,
   setTitle,
   onAddList,
   onChangeTitle,
 }) => (
   <div>
     <ul>
+      Total count: {total ? total.count : 0}
       {lists.map(list => (
         <li key={list._id}>
           <Link to={`/lists/${list._id}`}>

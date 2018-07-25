@@ -1,5 +1,6 @@
 import TodoLists from '/imports/collections/TodoLists';
 import * as api from '/imports/common/api/TodoLists';
+import Count from '/imports/common/models/Count';
 import publish from './publish';
 import implement from './implement';
 
@@ -33,7 +34,27 @@ implement(api.remove, {
 });
 
 publish(api.allLists, {
-  run() {
+  run({
+    controlId,
+  }) {
+    if (controlId) {
+      let count = 0;
+      let isInitialRun = true;
+      TodoLists.find({}).observe({
+        added: () => {
+          count += 1;
+          if (!isInitialRun) {
+            this.changed(Count.collection, controlId, { count });
+          }
+        },
+        removed: () => {
+          count -= 1;
+          this.changed(Count.collection, controlId, { count });
+        },
+      });
+      this.added(Count.collection, controlId, { count });
+      isInitialRun = false;
+    }
     return TodoLists.find({});
   },
 });
@@ -43,4 +64,3 @@ publish(api.oneList, {
     return TodoLists.find({ _id: listId });
   },
 });
-

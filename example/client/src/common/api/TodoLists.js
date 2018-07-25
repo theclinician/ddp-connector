@@ -25,7 +25,9 @@ export const remove = new ApiSpec({
 
 export const allLists = new ApiSpec({
   name: 'api.TodoLists.allLists',
-  schema: new Schema(),
+  schema: new Schema({
+    controlId: { type: String, optional: true },
+  }),
 });
 
 export const oneList = new ApiSpec({
