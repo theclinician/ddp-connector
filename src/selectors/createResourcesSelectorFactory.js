@@ -2,15 +2,17 @@ import createTree from 'functional-red-black-tree';
 import {
   createSelector,
 } from 'reselect';
+import memoizeMapValues from '@theclinician/selectors/lib/memoizeMapValues';
 import forEach from 'lodash/forEach';
 import compare from '../utils/compare';
-import memoizeMapValues from '../utils/memoizeMapValues';
 
 const identity = x => x;
 
 function createResourcesSelectorFactory(storageKey) {
   let resourcesTree = createTree(compare);
 
+  // TODO: Alternatively we could use custom middleware to capture
+  //       actions that are mutation the corresponding branch of state tree.
   const selectResourcesDb = (state) => {
     const resourcesDb = state.ddp && state.ddp[storageKey];
     resourcesTree.forEach((key, resource) => {

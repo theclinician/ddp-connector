@@ -2,15 +2,18 @@ import isArray from 'lodash/isArray';
 import orderBy from 'lodash/orderBy';
 import values from 'lodash/values';
 import forEach from 'lodash/forEach';
+import groupBy from 'lodash/groupBy';
+import mapValues from 'lodash/mapValues';
 import isPlainObject from 'lodash/isPlainObject';
 import matches from 'lodash/matches';
 import {
+  toSelector,
+  createDeepEqualSelector,
+  createValuesMappingSelector,
+} from '@theclinician/selectors';
+import {
   createSelector,
 } from 'reselect';
-import createValuesMappingSelector from './createValuesMappingSelector';
-import createDeepEqualSelector from './createDeepEqualSelector';
-// import createShallowEqualSelector from './createShallowEqualSelector';
-import createStructuredSelector from './createStructuredSelector';
 import pickAnyKey from '../utils/pickAnyKey';
 
 const identity = x => x;
@@ -39,7 +42,7 @@ const createEntitiesSelectors = (collection, {
     : selectEntities;
 
   const createSelectOrderBySettings = (selectSorter = constant(null)) => createDeepEqualSelector(
-    typeof selectSorter === 'function' ? selectSorter : createStructuredSelector(selectSorter),
+    typeof selectSorter === 'function' ? selectSorter : toSelector(selectSorter),
     (sorter) => {
       const iteratees = [];
       const orders = [];
@@ -118,7 +121,7 @@ const createEntitiesSelectors = (collection, {
     }
     let predicateSelector;
     if (isPlainObject(selectPredicate)) {
-      predicateSelector = createStructuredSelector(selectPredicate);
+      predicateSelector = toSelector(selectPredicate);
     } else if (typeof selectPredicate === 'function') {
       predicateSelector = selectPredicate;
     } else {

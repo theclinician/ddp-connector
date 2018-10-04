@@ -11,15 +11,17 @@ import isEmpty from 'lodash/isEmpty';
 import {
   debounce,
 } from '@theclinician/toolbelt';
+import {
+  toSelector,
+  createDeepEqualSelector,
+  createShallowEqualSelector,
+} from '@theclinician/selectors';
 import DDPConnector from './DDPConnector';
 import createResourcesSelectorFactory from './selectors/createResourcesSelectorFactory';
 import {
   createIdGenerator,
   wrapMapState,
 } from './utils';
-import createDeepEqualSelector from './selectors/createDeepEqualSelector';
-import createStructuredSelector from './selectors/createStructuredSelector';
-import createShallowEqualSelector from './selectors/createShallowEqualSelector';
 
 const uniqueId = createIdGenerator('listener.');
 const constant = x => () => x;
@@ -259,7 +261,7 @@ const ddp = ({
         defaultValue({}),
       );
       const getOtherValues = createSelectors
-        ? createStructuredSelector(createSelectors({
+        ? toSelector(createSelectors({
           subscriptions: selectSubscriptions,
           queries: selectQueries,
         }))
