@@ -1,7 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import {
-  createStructuredSelector, createSelector,
+  createSelector,
+  createStructuredSelector,
 } from 'reselect';
 import { ddp } from '@theclinician/ddp-connector';
 import { connect } from 'react-redux';
@@ -17,6 +18,7 @@ import {
 import {
   callMethod,
 } from '../common/utils/actions';
+import Todo from '../common/models/Todo';
 import TodoList from '../common/models/TodoList';
 import Count from '../common/models/Count';
 
@@ -41,7 +43,11 @@ const Lists = compose(
   }),
   connect(
     createStructuredSelector({
-      lists: TodoList.selectors.find(),
+      lists: TodoList.selectors.all().lookup({
+        from: Todo.selectors.all(),
+        as: 'todos',
+        foreignKey: 'listId',
+      }),
     }),
     (dispatch, { title, setTitle }) => ({
       onAddList: () =>
@@ -69,6 +75,7 @@ const Lists = compose(
         <li key={list._id}>
           <Link to={`/lists/${list._id}`}>
             {list.title}
+            {list.todos.length > 0 && <span>&nbsp;({list.todos.length})</span>}
           </Link>
         </li>
       ))}

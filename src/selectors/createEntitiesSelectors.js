@@ -8,7 +8,9 @@ import isPlainObject from 'lodash/isPlainObject';
 import matches from 'lodash/matches';
 import {
   toSelector,
+  createGetAtKey,
   createDeepEqualSelector,
+  createReconcilingSelector,
   createValuesMappingSelector,
 } from '@theclinician/selectors';
 import {
@@ -165,6 +167,38 @@ const createEntitiesSelectors = (collection, {
     );
   };
 
+  const lookup = (selectDocs, {
+    from = selectDocs,
+    key,
+    foreignKey,
+    as,
+  } = {}) => {
+    const getValue = key ? createGetAtKey(key) : (doc, id) => id;
+    const selectJoin = createReconcilingSelector(
+      selectDocs,
+      createReconcilingSelector(
+        from,
+        otherDocs => groupBy(otherDocs, foreignKey),
+      ),
+      (docs, byForeignKey) => mapValues(docs, (doc, id) => {
+        const keyValue = getValue(doc, id);
+        return {
+          doc,
+          related: byForeignKey[keyValue] || [],
+        };
+      }),
+    );
+    return createValuesMappingSelector(
+      selectJoin,
+      ({ doc, related }) => Object.create(doc, {
+        [as]: {
+          enumerable: false,
+          value: related,
+        },
+      }),
+    );
+  };
+
   const createList = (selectDocs, selectSorter) => {
     const selector = createListSelector(selectDocs, selectSorter);
     Object.assign(selector, {
@@ -175,6 +209,7 @@ const createEntitiesSelectors = (collection, {
         const selectCombinedSorters = createCombinedSorterSelector(selectSorter, selectAnotherSorter);
         return createList(selectDocs, selectCombinedSorters);
       },
+      lookup: options => createList(lookup(selectDocs, options), selectSorter),
     });
     return selector;
   };
@@ -189,6 +224,7 @@ const createEntitiesSelectors = (collection, {
         const selectCombinedSorters = createCombinedSorterSelector(selectSorter, selectAnotherSorter);
         return createOne(selectDocs, selectCombinedSorters);
       },
+      lookup: options => createOne(lookup(selectDocs, options), selectSorter),
     });
     return selector;
   };
@@ -209,7 +245,11 @@ const createEntitiesSelectors = (collection, {
   // select(Todo).where()
   // select(Todo).where().byId()
   // select(Todo).where().sort().limit()
-  // select(Todo).where().join()
+  // select(TodoList).all().lookup({
+  //   from: select(Todo).all(),
+  //   foreignKey: 'listId',
+  //   as: 'todos',
+  // })
 
   return {
     one: createOne(selectAll),
