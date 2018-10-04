@@ -51,7 +51,8 @@ const createCurrentUserSelectors = (collection, {
             ...user,
           };
         }
-      }
+        return undefined;
+      },
     )
     : noModelSpecified;
 
