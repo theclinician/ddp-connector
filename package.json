@@ -53,7 +53,7 @@
     "webpack": "^2.2.1"
   },
   "peerDependencies": {
-    "@theclinician/ddp-client": "^0.5.0-rc3"
+    "@theclinician/ddp-client": "^0.5.2"
   },
   "dependencies": {
     "@theclinician/selectors": "^0.5.0",
