@@ -211,17 +211,57 @@ selectors.getCurrentId
 ### `createEntitiesSelectors(collection)`
 
 ```javascript
-import { createEntitiesSelectors } from '@theclinician/ddp-connector';
+import { createEntitiesSelectors as select } from '@theclinician/ddp-connector';
 
-createCurrentUserSelectors('users');
+select('Todos').all()
+select('Todos').one()
+// find element by id
+select('Todos').one.id('currentListId')
+select('Todos').one.where(/* selectPredicate */)
+select('Todos').all.where()
+// prvide a custom sorter object
+select('Todos').all.where().sort({
+  createdAt: -1,
+})
+// return a map id -> object rathen than a list
+select('Todos').all.where().byId()
+// transform documents before returing the result
+select('Todos').all.where().map('title')
+select('TodoLists').all().lookup({
+  from: select('Todos').all(),
+  foreignKey: 'listId',
+  as: 'todos',
+})
 ```
-
-Resturns `selectors` object with the following properties
+The following selectors are deprecated, please do not use them anymore:
 ```javascript
-selectors.find(predicate, ...selectors);
-selectors.findAndMap(predicate, transform, ...selectors);
-selectors.findOne(predicate, ...selectors);
-selectors.getOne(idSelector)
-selectors.getAll
-selectors.getAllById
+select('Todos').findAndMap(predicate, transform, ...selectors);
+select('Todos').findOne(predicate, ...selectors);
+select('Todos').getOne(idSelector)
+select('Todos').getAll
+select('Todos').getAllById
+```
+Please note that `.where()` accepts a predicate selector, not predicate function itself, so:
+```javascript
+// NOTE: This is not going to work:
+// select('Todos').where(todo => !todo.isReady())
+const constant = x => () => x;
+
+select('Todos').where(
+  constant(todo => !todo.isReady())
+);
+
+// or alternatively
+select('Todos').all.satisfying(
+  todo => !todo.isReady()
+);
+```
+This is important because you may need to do things like:
+```javascript
+select('Todos').where(
+  createSelector(
+    selectCurrentListId
+    listId => todo => todo.listId === listId,
+  ),
+)
 ```

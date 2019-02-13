@@ -140,7 +140,7 @@ describe('Test selectors - "where" api', () => {
   });
 
   it('should select a document by id', () => {
-    const selector = testContext.selectors.col1.one.id(constant('1'));
+    const selector = testContext.selectors.col1.one.whereId(constant('1'));
     const expected = {
       _id: '1',
       a: 1,
@@ -156,7 +156,7 @@ describe('Test selectors - "where" api', () => {
 
   it('should find all documents', () => {
     const predicate = constant(true);
-    const selector = testContext.selectors.col1.where(() => predicate);
+    const selector = testContext.selectors.col1.all.satisfying(predicate);
     const doc1 = {
       _id: '1',
       a: 1,
@@ -216,4 +216,3 @@ describe('Test selectors - "where" api', () => {
     expect(results2).toEqual(doc1);
   });
 });
-

@@ -19,8 +19,7 @@ const createCurrentUserSelectors = (collection, {
   //       will only be created later on, when entity is merged with ddp.currentUser.user object.
   const userSelectorCreators = createEntitiesSelectors(collection, { prefix });
 
-  const selectCurrentUserState = state => state[prefix] &&
-                                          state[prefix].currentUser;
+  const selectCurrentUserState = state => state[prefix] && state[prefix].currentUser;
 
   const selectCurrentUserId = createSelector(
     selectCurrentUserState,
@@ -34,7 +33,7 @@ const createCurrentUserSelectors = (collection, {
 
   const selectCurrent = userSelectorCreators
     ? createSelector(
-      userSelectorCreators.one.id(
+      userSelectorCreators.one.whereId(
         selectCurrentUserId,
       ),
       selectCurrentUser,

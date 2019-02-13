@@ -12,11 +12,12 @@ import {
   createDeepEqualSelector,
   createReconcilingSelector,
   createValuesMappingSelector,
+  createHigherOrderSelector,
 } from '@theclinician/selectors';
 import {
   createSelector,
 } from 'reselect';
-import pickAnyKey from '../utils/pickAnyKey';
+import pickAnyKey, { pickNumberOfKeys } from '../utils/pickAnyKey';
 
 const identity = x => x;
 const constant = x => () => x;
@@ -28,10 +29,8 @@ const createEntitiesSelectors = (collection, {
   prefix = 'ddp',
 } = {}) => {
   const selectEntities = (state) => {
-    if (state[prefix].status &&
-        state[prefix].status.restoring) {
-      return state[prefix].status.entities &&
-             state[prefix].status.entities[collection];
+    if (state[prefix].status && state[prefix].status.restoring) {
+      return state[prefix].status.entities && state[prefix].status.entities[collection];
     }
     return state[prefix].entities[collection];
   };
@@ -77,6 +76,12 @@ const createEntitiesSelectors = (collection, {
     list => list && list[0],
   );
 
+  const createListSliceSelector = (selectDocs, selectSorter, selectLimit) => createSelector(
+    createListSelector(selectDocs, selectSorter),
+    selectLimit,
+    (list, limit) => (list ? list.slice(0, limit) : []),
+  );
+
   const createCombinedSorterSelector = (selectSorter, selectAnotherSorter = constant(null)) => {
     if (!selectSorter) {
       return selectAnotherSorter;
@@ -92,6 +97,23 @@ const createEntitiesSelectors = (collection, {
           return sorter;
         }
         return (isArray(sorter) ? sorter : [sorter]).concat(newSorter);
+      },
+    );
+  };
+
+  const createSubsetSelectorCreator = selectLimit => (selectDocs, selectSorter) => {
+    if (selectSorter) {
+      return createListSliceSelector(selectDocs, selectSorter, toSelector(selectLimit));
+    }
+    return createSelector(
+      selectDocs,
+      (docs) => {
+        const keys = pickNumberOfKeys(docs);
+        const object = {};
+        forEach(keys, (key) => {
+          object[key] = docs[key];
+        });
+        return object;
       },
     );
   };
@@ -199,38 +221,56 @@ const createEntitiesSelectors = (collection, {
     );
   };
 
-  const createList = (selectDocs, selectSorter) => {
-    const selector = createListSelector(selectDocs, selectSorter);
-    Object.assign(selector, {
-      one: () => createSelectOne(selectDocs, selectSorter)(),
-      byId: () => selectDocs,
-      where: selectPredicate => createList(filter(selectDocs, selectPredicate)),
-      sort(selectAnotherSorter) {
-        const selectCombinedSorters = createCombinedSorterSelector(selectSorter, selectAnotherSorter);
-        return createList(selectDocs, selectCombinedSorters);
-      },
-      lookup: options => createList(lookup(selectDocs, options), selectSorter),
-    });
-    return selector;
-  };
+  const selectTransformedDocs = (selectDocs, selectTransform) => createHigherOrderSelector(
+    toSelector(selectTransform),
+    transform => createValuesMappingSelector(
+      selectDocs,
+      transform,
+    ),
+  );
 
-  const createOne = (selectDocs, selectSorter) => {
-    const selectorCreator = createSelectOne(selectDocs, selectSorter);
-    const selector = selectorCreator();
-    Object.assign(selector, {
-      id: selectorCreator,
-      where: selectPredicate => createOne(filter(selectDocs, selectPredicate), selectSorter),
-      sort(selectAnotherSorter) {
-        const selectCombinedSorters = createCombinedSorterSelector(selectSorter, selectAnotherSorter);
-        return createOne(selectDocs, selectCombinedSorters);
-      },
-      lookup: options => createOne(lookup(selectDocs, options), selectSorter),
-    });
-    return selector;
-  };
+  const assignMethods = (createUtility, createSelectAll, selectDocs, selectSorter, object) => Object.assign(object, {
+    byId: createSelectAll(selectDocs, selectDocs),
+    where: selectPredicate => createUtility(filter(selectDocs, selectPredicate), selectSorter),
+    whereId: selectId => createUtility(filter(selectDocs, createSelector(
+      selectId,
+      id => (doc, docId) => id === docId,
+    ))),
+    whereIdMatchesProp: prop => createUtility(filter(selectDocs, createSelector(
+      property(prop),
+      id => (doc, docId) => id === docId,
+    ))),
+    satisfying: predicate => createUtility(filter(selectDocs, constant(predicate)), selectSorter),
+    sort(selectAnotherSorter) {
+      const selectCombinedSorters = createCombinedSorterSelector(selectSorter, selectAnotherSorter);
+      return createUtility(selectDocs, selectCombinedSorters);
+    },
+    limit: selectLimit => createUtility(
+      createSubsetSelectorCreator(selectLimit)(selectDocs, selectSorter),
+      selectSorter,
+    ),
+    lookup: options => createUtility(lookup(selectDocs, options), selectSorter),
+    map: selectTransform => createUtility(
+      selectTransformedDocs(selectDocs, selectTransform),
+      selectSorter,
+    ),
+  });
 
-  const createWhere = selectDocs => selectPredicate =>
-    createList(filter(selectDocs, selectPredicate));
+  const createAllUtility = (selectDocs, selectSorter) => assignMethods(
+    createAllUtility,
+    constant,
+    selectDocs,
+    selectSorter,
+    createListSelector(selectDocs, selectSorter),
+  );
+
+  const createOneUtility = (selectDocs, selectSorter) => assignMethods(
+    createOneUtility,
+    createSubsetSelectorCreator(1),
+    selectDocs,
+    selectSorter,
+    createSelectOne(selectDocs, selectSorter)(),
+  );
 
   const createPredicate = (accept = constant(true), ...selectors) => createSelector(
     ...selectors,
@@ -239,32 +279,50 @@ const createEntitiesSelectors = (collection, {
 
   // Example usage:
   //
-  // select(Todo).one
+  // select(Todo).one()
   // select(Todo).one.id()
   // select(Todo).one.where()
   // select(Todo).where()
   // select(Todo).where().byId()
-  // select(Todo).where().sort().limit()
   // select(TodoList).all().lookup({
   //   from: select(Todo).all(),
   //   foreignKey: 'listId',
   //   as: 'todos',
   // })
 
+  const where = selectPredicate => createAllUtility(filter(selectAll, selectPredicate));
+
+  const one = assignMethods(
+    createOneUtility,
+    createSubsetSelectorCreator(1),
+    selectAll,
+    null,
+    () => createOneUtility(),
+  );
+
+  const all = assignMethods(
+    createAllUtility,
+    constant,
+    selectAll,
+    null,
+    () => createAllUtility(selectAll),
+  );
+
   return {
-    one: createOne(selectAll),
-    where: createWhere(selectAll),
-    all() {
-      return this.where();
-    },
+    one,
+    where,
+    all,
     // LEGACY
     find(accept, ...selectors) {
+      console.warn('.find() is deprecated, use .all.where() instead');
       return createListSelector(filter(selectAll, createPredicate(accept, ...selectors)));
     },
     findOne(accept, ...selectors) {
+      console.warn('.findOne() is deprecated, use .one.where() instead');
       return createItemSelector(filter(selectAll, createPredicate(accept, ...selectors)));
     },
     findAndMap(accept, transform = identity, ...selectors) {
+      console.warn('.findAndMap() is deprecated, use .all.where().map() instead');
       return createListSelector(filter(selectAll, createPredicate(accept, ...selectors), transform));
     },
     getOne: createSelectOne(selectAll),
