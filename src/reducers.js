@@ -1,3 +1,4 @@
+import omit from 'lodash/omit';
 import { combineReducers } from 'redux';
 import { handleActions } from 'redux-actions';
 import {
@@ -20,9 +21,6 @@ import {
   setRestoring,
   setEntitiesCopy,
 } from './actions.js';
-import {
-  omit,
-} from './utils.js';
 
 class User {
   constructor(doc) {
@@ -56,6 +54,7 @@ export const currentUserReducer = handleActions({
   [setUser]: (state, { payload }) => ({
     ...state,
     isLoggingIn: false,
+    // eslint-disable-next-line no-underscore-dangle
     userId: payload._id,
     user: new User({
       ...state.user,

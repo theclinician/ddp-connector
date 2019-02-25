@@ -1,4 +1,3 @@
-
 export const createIdGenerator = (prefix = '') => {
   let counter = 0;
   return () => {
@@ -15,17 +14,6 @@ export const once = (func) => {
       func(...args);
     }
   };
-};
-
-export const omit = (object, keys) => {
-  if (!keys || keys.length === 0) {
-    return object;
-  }
-  const copy = { ...object };
-  for (const key of keys) {
-    delete copy[key];
-  }
-  return copy;
 };
 
 export const wrapMapState = (mapToProps) => {
