@@ -1,17 +1,9 @@
 {
   "extends": "airbnb-base",
   "rules": {
-    "import/no-absolute-path": "off",
-    "import/no-extraneous-dependencies": "off",
-    "import/prefer-default-export": "off",
+    "operator-linebreak": ["error", "after", { "overrides": { "?": "before", ":": "before" } }],
     "import/extensions": "off",
     "key-spacing": "off",
-    "no-restricted-syntax": [
-      "error",
-      "ForInStatement",
-      "LabeledStatement",
-      "WithStatement"
-    ],
     "max-len": ["error", 140],
     "func-names": "off",
     "no-console": "off"

@@ -90,4 +90,3 @@ describe('Test ResourcesManager', () => {
     ]);
   });
 });
-

@@ -7,11 +7,13 @@ class DDPProvider extends React.Component {
     super(props, context);
     this.ddpConnector = props.ddpConnector;
   }
+
   getChildContext() {
     return {
       ddpConnector: this.ddpConnector,
     };
   }
+
   render() {
     return Children.only(this.props.children);
   }

@@ -37,7 +37,8 @@ class ResourcesManager extends EventEmitter {
   getCleanupDelay(request) {
     if (typeof this.cleanupDelay === 'function') {
       return this.cleanupDelay(request);
-    } else if (typeof this.cleanupDelay === 'number') {
+    }
+    if (typeof this.cleanupDelay === 'number') {
       return this.cleanupDelay;
     }
     return 0;
@@ -107,7 +108,7 @@ class ResourcesManager extends EventEmitter {
       if (!listener.byResourceId[id]) {
         listener.byResourceId[id] = resource.require();
       }
-      const promise = listener.byResourceId[id].promise;
+      const { promise } = listener.byResourceId[id];
       promise.catch((err) => {
         console.error(`While requesting resource id ${id}`, request, err);
       });

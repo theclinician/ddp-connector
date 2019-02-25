@@ -24,7 +24,8 @@ export const wrapMapState = (mapToProps) => {
   const compile = (func) => {
     if (func.length >= 2) {
       return func;
-    } else if (func.length === 1) {
+    }
+    if (func.length === 1) {
       return state => func(state);
     }
     return () => func();

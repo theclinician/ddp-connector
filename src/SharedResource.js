@@ -59,10 +59,8 @@ class SharedResource {
   }
 
   require() {
-    let promise = this.promise;
-    if (!promise) {
+    if (!this.promise) {
       this.promise = this.refresh().promise;
-      promise = this.promise;
     }
 
     const release = once(() => {
@@ -76,7 +74,7 @@ class SharedResource {
     return {
       // NOTE: At this point, this.promise can already be "null" (if create erred immediately),
       //       but we still return a valid promise because the user will rely on it.
-      promise,
+      promise: this.promise,
       release,
     };
   }

@@ -138,8 +138,10 @@ const ddp = ({
         },
       );
 
-      this.messagesListeners = map(this.messageHandlers, (messageHandler, channel) =>
-        this.ddpConnector.on(`messages.${channel}`, messageHandler));
+      this.messagesListeners = map(
+        this.messageHandlers,
+        (messageHandler, channel) => this.ddpConnector.on(`messages.${channel}`, messageHandler),
+      );
 
       this.updateSubscriptions(this.props.requestedSubscriptions);
       this.updateQueries(this.props.requestedQueries);

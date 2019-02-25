@@ -23,7 +23,8 @@ function conditional(predicate, specialCase) {
         return -1;
       }
       return specialCase(x, y);
-    } else if (predicate(y)) {
+    }
+    if (predicate(y)) {
       return 1;
     }
     return 0;
