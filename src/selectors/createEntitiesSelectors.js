@@ -232,8 +232,8 @@ const createEntitiesSelectors = (collection, {
   const assignMethods = (createUtility, createSelectAll, selectDocs, selectSorter, object) => Object.assign(object, {
     byId: createSelectAll(selectDocs, selectDocs),
     where: selectPredicate => createUtility(filter(selectDocs, selectPredicate), selectSorter),
-    whereId: selectId => createUtility(filter(selectDocs, createSelector(
-      selectId,
+    whereIdEquals: selectId => createUtility(filter(selectDocs, createSelector(
+      toSelector(selectId),
       id => (doc, docId) => id === docId,
     ))),
     whereIdMatchesProp: prop => createUtility(filter(selectDocs, createSelector(

@@ -140,7 +140,7 @@ describe('Test selectors - "where" api', () => {
   });
 
   it('should select a document by id', () => {
-    const selector = testContext.selectors.col1.one.whereId(constant('1'));
+    const selector = testContext.selectors.col1.one.whereIdEquals('1');
     const expected = {
       _id: '1',
       a: 1,

@@ -48,7 +48,7 @@ const state2 = {
 const selectors = createEntitiesSelectors('collection');
 
 test('selects a document by id', () => {
-  expect(selectors.one.whereId(constant('1'))(state)).toEqual({ id: 1, value: 1 });
+  expect(selectors.one.whereIdEquals(constant('1'))(state)).toEqual({ id: 1, value: 1 });
 });
 
 test('selects a document by id using legacy api', () => {

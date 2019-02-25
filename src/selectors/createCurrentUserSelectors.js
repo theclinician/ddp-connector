@@ -33,7 +33,7 @@ const createCurrentUserSelectors = (collection, {
 
   const selectCurrent = userSelectorCreators
     ? createSelector(
-      userSelectorCreators.one.whereId(
+      userSelectorCreators.one.whereIdEquals(
         selectCurrentUserId,
       ),
       selectCurrentUser,
