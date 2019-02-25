@@ -223,7 +223,7 @@ select('Todos').all.where()
 select('Todos').all.where().sort({
   createdAt: -1,
 })
-// return a map id -> object rathen than a list
+// return a map id -> object rather than a list
 select('Todos').all.where().byId()
 // transform documents before returing the result
 select('Todos').all.where().map('title')

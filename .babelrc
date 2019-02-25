@@ -1,4 +1,6 @@
 {
-  "presets": ["es2015", "stage-3"],
-  "plugins": ["syntax-trailing-function-commas"]
+  "presets": ["@babel/env"],
+  "plugins": [
+    "@babel/plugin-proposal-object-rest-spread"
+  ]
 }
