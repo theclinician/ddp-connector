@@ -17,6 +17,7 @@ import {
   createShallowEqualSelector,
 } from '@theclinician/selectors';
 import DDPConnector from './DDPConnector';
+import { DDPContext } from './DDPProvider';
 import createResourcesSelectorFactory from './selectors/createResourcesSelectorFactory';
 import {
   createIdGenerator,
@@ -66,6 +67,7 @@ const ddp = ({
   ]);
 
   const propTypes = {
+    ddpConnector: PropTypes.instanceOf(DDPConnector).isRequired,
     requestedSubscriptions: collection,
     requestedQueries: collection,
     subscriptionsReady: PropTypes.bool,
@@ -77,10 +79,6 @@ const ddp = ({
     queriesReady: true,
   };
 
-  const contextTypes = {
-    ddpConnector: PropTypes.instanceOf(DDPConnector),
-  };
-
   class Container extends React.Component {
     constructor(props) {
       super(props);
@@ -88,10 +86,13 @@ const ddp = ({
         numberOfPendingMutations: 0,
       };
       const mutate = (request, options) => {
+        const {
+          ddpConnector,
+        } = this.props;
         if (request) {
           const { name, params } = request;
           this.beginMutation();
-          return this.ddpConnector.apply(name, params, options)
+          return ddpConnector.apply(name, params, options)
             .then(res => this.endMutation(res))
             .catch((err) => {
               this.endMutation();
@@ -121,26 +122,28 @@ const ddp = ({
     }
 
     componentDidMount() {
+      const {
+        ddpConnector,
+      } = this.props;
       this.id = uniqueId();
-      this.ddpConnector = this.context.ddpConnector;
 
       this.updateSubscriptions = debounce(
-        subscriptions => this.ddpConnector.subsManager.updateRequests(this.id, subscriptions),
+        subscriptions => ddpConnector.subsManager.updateRequests(this.id, subscriptions),
         {
-          ms: subscriptionsUpdateDelay !== undefined ? subscriptionsUpdateDelay : this.ddpConnector.resourceUpdateDelay,
+          ms: subscriptionsUpdateDelay !== undefined ? subscriptionsUpdateDelay : ddpConnector.resourceUpdateDelay,
         },
       );
 
       this.updateQueries = debounce(
-        queries => this.ddpConnector.queryManager.updateRequests(this.id, queries),
+        queries => ddpConnector.queryManager.updateRequests(this.id, queries),
         {
-          ms: queriesUpdateDelay !== undefined ? queriesUpdateDelay : this.ddpConnector.resourceUpdateDelay,
+          ms: queriesUpdateDelay !== undefined ? queriesUpdateDelay : ddpConnector.resourceUpdateDelay,
         },
       );
 
       this.messagesListeners = map(
         this.messageHandlers,
-        (messageHandler, channel) => this.ddpConnector.on(`messages.${channel}`, messageHandler),
+        (messageHandler, channel) => ddpConnector.on(`messages.${channel}`, messageHandler),
       );
 
       this.updateSubscriptions(this.props.requestedSubscriptions);
@@ -153,8 +156,11 @@ const ddp = ({
     }
 
     componentWillUnmount() {
-      this.ddpConnector.subsManager.updateRequests(this.id, []);
-      this.ddpConnector.queryManager.updateRequests(this.id, []);
+      const {
+        ddpConnector,
+      } = this.props;
+      ddpConnector.subsManager.updateRequests(this.id, []);
+      ddpConnector.queryManager.updateRequests(this.id, []);
       if (this.messagesListeners) {
         this.messagesListeners.forEach(stop => stop());
         this.messagesListeners = null;
@@ -176,11 +182,11 @@ const ddp = ({
     }
 
     render() {
-      const { ddpConnector } = this.context;
       const {
         numberOfPendingMutations,
       } = this.state;
       const {
+        ddpConnector,
         subscriptionsReady,
         queriesReady,
         requestedSubscriptions,
@@ -217,7 +223,6 @@ const ddp = ({
 
   Container.propTypes = propTypes;
   Container.defaultProps = defaultProps;
-  Container.contextTypes = contextTypes;
 
   if (process.env.NODE_ENV !== 'production') {
     Container.displayName = `ddp(${Inner.displayName})`;
@@ -282,7 +287,16 @@ const ddp = ({
         };
       };
     },
-  )(Container);
+  )(props => (
+    <DDPContext.Consumer>
+      {ddpConnector => (
+        <Container
+          {...props}
+          ddpConnector={ddpConnector}
+        />
+      )}
+    </DDPContext.Consumer>
+  ));
 };
 
 export default ddp;
