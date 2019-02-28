@@ -4,25 +4,26 @@
   "private": true,
   "dependencies": {
     "@theclinician/ddp-client": "^0.5.2",
-    "@theclinician/ddp-connector": "file:../..",
+    "@theclinician/ddp-connector": "^0.6.0-rc0",
     "flat": "^2.0.1",
-    "react": "^15.5.4",
-    "react-dom": "^15.5.4",
-    "react-redux": "^5.0.4",
+    "react": "^16.8.3",
+    "react-dom": "^16.8.3",
+    "react-redux": "^6.0.1",
     "react-router": "^4.1.1",
     "react-router-dom": "^4.1.1",
     "recompose": "^0.23.1",
     "redux": "^3.6.0",
-    "redux-devtools": "^3.4.0",
     "redux-thunk": "^2.2.0",
     "reselect": "^3.0.0",
     "very-simple-schema": "0.0.5"
   },
   "devDependencies": {
-    "react-scripts": "^2.1.5"
+    "react-scripts": "^2.1.5",
+    "source-map-explorer": "^1.7.0"
   },
   "proxy": "http://localhost:4000",
   "scripts": {
+    "analyze": "source-map-explorer build/static/js/main.*",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom",

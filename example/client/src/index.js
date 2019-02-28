@@ -4,9 +4,6 @@ import map from 'lodash/map';
 import get from 'lodash/get';
 import mapValues from 'lodash/mapValues';
 import {
-  persistState,
-} from 'redux-devtools';
-import {
   compose,
   createStore,
   combineReducers,
@@ -51,11 +48,6 @@ const rootReducer = combineReducers({
 
 const enhancer = compose(
   window.__REDUX_DEVTOOLS_EXTENSION__ ? window.__REDUX_DEVTOOLS_EXTENSION__({}) : x => x,
-  persistState(
-    window.location.href.match(
-      /[?&]debug_session=([^&#]+)\b/,
-    ),
-  ),
 );
 
 const store = createStore(
