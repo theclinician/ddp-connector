@@ -195,20 +195,25 @@ const createEntitiesSelectors = (collection, {
     foreignKey,
     as,
   } = {}) => {
-    const getValue = key ? createGetAtKey(key) : (doc, id) => id;
+    let getRelated;
+    if (typeof key === 'function') {
+      getRelated = key;
+    } else if (!key || typeof key === 'string') {
+      const getKey = key ? createGetAtKey(key) : (doc, id) => id;
+      getRelated = (doc, id, byForeignKey) => byForeignKey[getKey(doc, id)];
+    } else {
+      getRelated = constant([]);
+    }
     const selectJoin = createReconcilingSelector(
       selectDocs,
       createReconcilingSelector(
         from,
         otherDocs => groupBy(otherDocs, foreignKey),
       ),
-      (docs, byForeignKey) => mapValues(docs, (doc, id) => {
-        const keyValue = getValue(doc, id);
-        return {
-          doc,
-          related: byForeignKey[keyValue] || [],
-        };
-      }),
+      (docs, byForeignKey) => mapValues(docs, (doc, id) => ({
+        doc,
+        related: getRelated(doc, id, byForeignKey) || [],
+      })),
     );
     return createValuesMappingSelector(
       selectJoin,
