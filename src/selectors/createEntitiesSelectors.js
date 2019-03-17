@@ -1,5 +1,3 @@
-import isArray from 'lodash/isArray';
-import orderBy from 'lodash/orderBy';
 import values from 'lodash/values';
 import forEach from 'lodash/forEach';
 import groupBy from 'lodash/groupBy';
@@ -9,7 +7,6 @@ import matches from 'lodash/matches';
 import {
   toSelector,
   createGetAtKey,
-  createDeepEqualSelector,
   createReconcilingSelector,
   createValuesMappingSelector,
   createHigherOrderSelector,
@@ -18,6 +15,11 @@ import {
   createSelector,
 } from 'reselect';
 import pickAnyKey, { pickNumberOfKeys } from '../utils/pickAnyKey';
+import {
+  nilSorter,
+  toSorterSelector,
+  composeSorterSelector,
+} from '../utils/sorting';
 
 const identity = x => x;
 const constant = x => () => x;
@@ -42,33 +44,13 @@ const createEntitiesSelectors = (collection, {
     )
     : selectEntities;
 
-  const createSelectOrderBySettings = (selectSorter = constant(null)) => createDeepEqualSelector(
-    typeof selectSorter === 'function' ? selectSorter : toSelector(selectSorter),
-    (sorter) => {
-      const iteratees = [];
-      const orders = [];
-      forEach(isArray(sorter) ? sorter : [sorter], (value) => {
-        if (typeof value === 'string') {
-          iteratees.push(value);
-          orders.push('asc');
-        } else if (isPlainObject(value)) {
-          forEach(value, (order, key) => {
-            iteratees.push(key);
-            orders.push(order < 0 ? 'desc' : 'asc');
-          });
-        }
-      });
-      return {
-        iteratees,
-        orders,
-      };
-    },
-  );
-
-  const createListSelector = (selectDocs, selectSorter) => createSelector(
+  const createListSelector = (selectDocs, selectSorter = constant(nilSorter)) => createSelector(
     selectDocs,
-    createSelectOrderBySettings(selectSorter),
-    (docs, { iteratees, orders }) => orderBy(values(docs), iteratees, orders),
+    toSorterSelector(selectSorter),
+    (docs, compare) => (compare === nilSorter
+      ? values(docs)
+      : values(docs).sort(compare)
+    ),
   );
 
   const createItemSelector = (selectDocs, selectSorter) => createSelector(
@@ -81,25 +63,6 @@ const createEntitiesSelectors = (collection, {
     selectLimit,
     (list, limit) => (list ? list.slice(0, limit) : []),
   );
-
-  const createCombinedSorterSelector = (selectSorter, selectAnotherSorter = constant(null)) => {
-    if (!selectSorter) {
-      return selectAnotherSorter;
-    }
-    return createSelector(
-      selectSorter,
-      selectAnotherSorter,
-      (sorter, newSorter) => {
-        if (!sorter) {
-          return newSorter;
-        }
-        if (!newSorter) {
-          return sorter;
-        }
-        return (isArray(sorter) ? sorter : [sorter]).concat(newSorter);
-      },
-    );
-  };
 
   const createSubsetSelectorCreator = selectLimit => (selectDocs, selectSorter) => {
     if (selectSorter) {
@@ -246,9 +209,18 @@ const createEntitiesSelectors = (collection, {
       id => (doc, docId) => id === docId,
     ))),
     satisfying: predicate => createUtility(filter(selectDocs, constant(predicate)), selectSorter),
-    sort(selectAnotherSorter) {
-      const selectCombinedSorters = createCombinedSorterSelector(selectSorter, selectAnotherSorter);
-      return createUtility(selectDocs, selectCombinedSorters);
+    sort: selectAnotherSorter => createUtility(
+      selectDocs,
+      composeSorterSelector(selectSorter, selectAnotherSorter),
+    ),
+    withCompare(compare) {
+      if (typeof compare !== 'function') {
+        throw new Error('Expected "compare" to be a function');
+      }
+      return createUtility(
+        selectDocs,
+        composeSorterSelector(selectSorter, constant(compare)),
+      );
     },
     limit: selectLimit => createUtility(
       createSubsetSelectorCreator(selectLimit)(selectDocs, selectSorter),

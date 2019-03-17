@@ -22,6 +22,10 @@ const state = {
           id: 3,
           value: 2,
         },
+        4: {
+          id: 4,
+          value: 0,
+        },
       },
     },
   },
@@ -68,6 +72,7 @@ test('selects all documents by id', () => {
     1: { id: 1, value: 1 },
     2: { id: 2, value: 1 },
     3: { id: 3, value: 2 },
+    4: { id: 4, value: 0 },
   });
 });
 
@@ -76,6 +81,7 @@ test('selects all documents by id using legacy api', () => {
     1: { id: 1, value: 1 },
     2: { id: 2, value: 1 },
     3: { id: 3, value: 2 },
+    4: { id: 4, value: 0 },
   });
 });
 
@@ -84,6 +90,7 @@ test('selects all documents', () => {
     { id: 1, value: 1 },
     { id: 2, value: 1 },
     { id: 3, value: 2 },
+    { id: 4, value: 0 },
   ]);
 });
 
@@ -92,6 +99,7 @@ test('selects all documents using legacy api', () => {
     { id: 1, value: 1 },
     { id: 2, value: 1 },
     { id: 3, value: 2 },
+    { id: 4, value: 0 },
   ]);
 });
 
@@ -114,6 +122,39 @@ test('selects all documents by criteria and sorts them', () => {
   expect(selector(state, 1)).toEqual([
     { id: 2, value: 1 },
     { id: 1, value: 1 },
+  ]);
+});
+
+test('sorts documents using explicit compare function', () => {
+  const compare = (a, b) => b.id - a.id;
+  const selector = selectors.all().withCompare(compare);
+  expect(selector(state, 1)).toEqual([
+    { id: 4, value: 0 },
+    { id: 3, value: 2 },
+    { id: 2, value: 1 },
+    { id: 1, value: 1 },
+  ]);
+});
+
+test('composes multiple sorting criteria', () => {
+  const selector = selectors.all()
+    .withCompare((a, b) => a.value - b.value)
+    .sort({ id: -1 });
+  expect(selector(state, 1)).toEqual([
+    { id: 4, value: 0 },
+    { id: 2, value: 1 },
+    { id: 1, value: 1 },
+    { id: 3, value: 2 },
+  ]);
+});
+
+test('composes multiple sorting criteria using object notation', () => {
+  const selector = selectors.all().sort({ value: 1, id: -1 });
+  expect(selector(state, 1)).toEqual([
+    { id: 4, value: 0 },
+    { id: 2, value: 1 },
+    { id: 1, value: 1 },
+    { id: 3, value: 2 },
   ]);
 });
 
