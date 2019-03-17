@@ -52,7 +52,7 @@
     "react-redux": "^6.0.1"
   },
   "dependencies": {
-    "@theclinician/selectors": "^0.5.2",
+    "@theclinician/selectors": "^0.5.3",
     "@theclinician/toolbelt": "0.0.2",
     "ejson": "^2.1.2",
     "functional-red-black-tree": "^1.0.1",
