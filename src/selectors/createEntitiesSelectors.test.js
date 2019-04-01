@@ -4,6 +4,7 @@ import createEntitiesSelectors from './createEntitiesSelectors';
 const constant = x => () => x;
 const argument = i => (...args) => args[i];
 
+const empty = {};
 const state = {
   ddp: {
     status: {
@@ -51,8 +52,24 @@ const state2 = {
 
 const selectors = createEntitiesSelectors('collection');
 
-test('selects a document by id', () => {
-  expect(selectors.one.whereIdEquals(constant('1'))(state)).toEqual({ id: 1, value: 1 });
+test('all().byId() selects empty object if state is empty', () => {
+  expect(selectors.all().byId()(empty)).toEqual({});
+});
+
+test('all() selects empty array if state is empty', () => {
+  expect(selectors.all()(empty)).toEqual([]);
+});
+
+test('one().byId() selects empty object if state is empty', () => {
+  expect(selectors.one().byId()(empty)).toEqual({});
+});
+
+test('one() selects nothing if state is empty', () => {
+  expect(selectors.one()(empty)).toEqual(null);
+});
+
+test('one().whereIdEquals() selects a document by id', () => {
+  expect(selectors.one().whereIdEquals(constant('1'))(state)).toEqual({ id: 1, value: 1 });
 });
 
 test('selects a document by id using legacy api', () => {

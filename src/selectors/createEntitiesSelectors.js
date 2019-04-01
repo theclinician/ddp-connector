@@ -30,19 +30,32 @@ const createEntitiesSelectors = (collection, {
   Model,
   prefix = 'ddp',
 } = {}) => {
+  const empty = {};
+
   const selectEntities = (state) => {
-    if (state[prefix].status && state[prefix].status.restoring) {
-      return state[prefix].status.entities && state[prefix].status.entities[collection];
+    if (state &&
+        state[prefix] &&
+        state[prefix].status &&
+        state[prefix].status.restoring) {
+      return state[prefix].status.entities &&
+             state[prefix].status.entities[collection];
     }
-    return state[prefix].entities[collection];
+    return state &&
+           state[prefix] &&
+           state[prefix].entities[collection];
   };
+
+  // NOTE: Values mapping selector returns the unchanged value if it's empty. This
+  //       means that if we pass null, then it will return the same null, not empty
+  //       object as in the case of lodash.mapValues.
+  const selectEntitiesOrEmpty = state => selectEntities(state) || empty;
 
   const selectAll = Model
     ? createValuesMappingSelector(
-      selectEntities,
+      selectEntitiesOrEmpty,
       rawObject => new Model(rawObject),
     )
-    : selectEntities;
+    : selectEntitiesOrEmpty;
 
   const createListSelector = (selectDocs, selectSorter = constant(nilSorter)) => createSelector(
     selectDocs,
@@ -197,8 +210,8 @@ const createEntitiesSelectors = (collection, {
     ),
   );
 
-  const assignMethods = (createUtility, createSelectAll, selectDocs, selectSorter, object) => Object.assign(object, {
-    byId: createSelectAll(selectDocs, selectDocs),
+  const assignMethods = (createUtility, createSubsetSelector, selectDocs, selectSorter, slector) => Object.assign(slector, {
+    byId: () => createSubsetSelector(selectDocs),
     where: selectPredicate => createUtility(filter(selectDocs, selectPredicate), selectSorter),
     whereIdEquals: selectId => createUtility(filter(selectDocs, createSelector(
       toSelector(selectId),
@@ -235,7 +248,7 @@ const createEntitiesSelectors = (collection, {
 
   const createAllUtility = (selectDocs, selectSorter) => assignMethods(
     createAllUtility,
-    constant,
+    identity,
     selectDocs,
     selectSorter,
     createListSelector(selectDocs, selectSorter),
@@ -274,12 +287,12 @@ const createEntitiesSelectors = (collection, {
     createSubsetSelectorCreator(1),
     selectAll,
     null,
-    () => createOneUtility(),
+    () => createOneUtility(selectAll),
   );
 
   const all = assignMethods(
     createAllUtility,
-    constant,
+    identity,
     selectAll,
     null,
     () => createAllUtility(selectAll),
