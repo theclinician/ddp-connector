@@ -72,6 +72,35 @@ test('one().whereIdEquals() selects a document by id', () => {
   expect(selectors.one().whereIdEquals(constant('1'))(state)).toEqual({ id: 1, value: 1 });
 });
 
+test('one().byId() selects an object with one key', () => {
+  expect(selectors.one().byId()(state)).toEqual({
+    1: {
+      id: 1,
+      value: 1,
+    },
+  });
+});
+
+test('all().limit(2).byId() selects at most two documents', () => {
+  expect(selectors.all().limit(2).byId()(state)).toEqual({
+    1: {
+      id: 1,
+      value: 1,
+    },
+    2: {
+      id: 2,
+      value: 1,
+    },
+  });
+});
+
+test('all().sort({ value: -1 }).limit(2) selects two top values', () => {
+  expect(selectors.all().sort({ value: -1, id: 1 }).limit(2)(state)).toEqual([
+    { id: 3, value: 2 },
+    { id: 1, value: 1 },
+  ]);
+});
+
 test('selects a document by id using legacy api', () => {
   expect(selectors.getOne(constant('1'))(state)).toEqual({ id: 1, value: 1 });
 });

@@ -1,3 +1,5 @@
+import map from 'lodash/map';
+import keyBy from 'lodash/keyBy';
 import values from 'lodash/values';
 import forEach from 'lodash/forEach';
 import groupBy from 'lodash/groupBy';
@@ -14,7 +16,7 @@ import {
 import {
   createSelector,
 } from 'reselect';
-import pickAnyKey, { pickNumberOfKeys } from '../utils/pickAnyKey';
+import pickAnyKey from '../utils/pickAnyKey';
 import {
   nilSorter,
   toSorterSelector,
@@ -71,28 +73,27 @@ const createEntitiesSelectors = (collection, {
     list => list && list[0],
   );
 
-  const createListSliceSelector = (selectDocs, selectSorter, selectLimit) => createSelector(
-    createListSelector(selectDocs, selectSorter),
-    selectLimit,
-    (list, limit) => (list ? list.slice(0, limit) : []),
-  );
-
-  const createSubsetSelectorCreator = selectLimit => (selectDocs, selectSorter) => {
-    if (selectSorter) {
-      return createListSliceSelector(selectDocs, selectSorter, toSelector(selectLimit));
-    }
-    return createSelector(
+  const createSubsetSelectorCreator = (selectLimit, selectSorter) => selectDocs => createReconcilingSelector(
+    toSelector(selectLimit),
+    createSelector(
       selectDocs,
-      (docs) => {
-        const keys = pickNumberOfKeys(docs);
-        const object = {};
-        forEach(keys, (key) => {
-          object[key] = docs[key];
-        });
-        return object;
+      toSorterSelector(selectSorter),
+      (docs, compare) => {
+        const list = map(docs, (doc, id) => ({ doc, id }));
+        if (compare === nilSorter) {
+          return list;
+        }
+        return list.sort((x, y) => compare(x.doc, y.doc));
       },
-    );
-  };
+    ),
+    (limit, sortedDocs) => mapValues(
+      keyBy(
+        sortedDocs.slice(0, limit),
+        'id',
+      ),
+      'doc',
+    ),
+  );
 
   const createSelectOne = (selectDocs, selectSorter) => (selectId) => {
     let idSelector = selectId;
@@ -236,7 +237,7 @@ const createEntitiesSelectors = (collection, {
       );
     },
     limit: selectLimit => createUtility(
-      createSubsetSelectorCreator(selectLimit)(selectDocs, selectSorter),
+      createSubsetSelectorCreator(selectLimit, selectSorter)(selectDocs),
       selectSorter,
     ),
     lookup: options => createUtility(lookup(selectDocs, options), selectSorter),
@@ -256,7 +257,7 @@ const createEntitiesSelectors = (collection, {
 
   const createOneUtility = (selectDocs, selectSorter) => assignMethods(
     createOneUtility,
-    createSubsetSelectorCreator(1),
+    createSubsetSelectorCreator(1, selectSorter),
     selectDocs,
     selectSorter,
     createSelectOne(selectDocs, selectSorter)(),
