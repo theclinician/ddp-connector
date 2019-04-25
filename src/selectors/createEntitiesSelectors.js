@@ -32,6 +32,7 @@ const createEntitiesSelectors = (collection, {
   Model,
   plugins,
   prefix = 'ddp',
+  transform: transformRawObject,
 } = {}) => {
   const empty = {};
 
@@ -53,10 +54,18 @@ const createEntitiesSelectors = (collection, {
   //       object as in the case of lodash.mapValues.
   const selectEntitiesOrEmpty = state => selectEntities(state) || empty;
 
-  const selectAll = Model
+  let mapOneObject;
+  if (Model && transformRawObject) {
+    mapOneObject = rawObject => new Model(transformRawObject(rawObject));
+  } else if (Model) {
+    mapOneObject = rawObject => new Model(rawObject);
+  } else if (transformRawObject) {
+    mapOneObject = transformRawObject;
+  }
+  const selectAll = transformRawObject
     ? createValuesMappingSelector(
       selectEntitiesOrEmpty,
-      rawObject => new Model(rawObject),
+      mapOneObject,
     )
     : selectEntitiesOrEmpty;
 

@@ -14,10 +14,14 @@ please make sure that you pass a valid Model and collection name to createCurren
 const createCurrentUserSelectors = (collection, {
   Model,
   prefix = 'ddp',
+  transform,
 } = {}) => {
   // NOTE: We are intentially not passing Model here, because the actual model
   //       will only be created later on, when entity is merged with ddp.currentUser.user object.
-  const userSelectorCreators = createEntitiesSelectors(collection, { prefix });
+  const userSelectorCreators = createEntitiesSelectors(collection, {
+    prefix,
+    transform,
+  });
 
   const selectCurrentUserState = state => state[prefix] && state[prefix].currentUser;
 

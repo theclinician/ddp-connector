@@ -25,7 +25,8 @@ const state = {
         },
         4: {
           id: 4,
-          value: 0,
+          // NOTE: This will be added by custom transform
+          // value: 0,
         },
       },
     },
@@ -55,6 +56,10 @@ const selectors = createEntitiesSelectors('collection', {
     nLargest: (n, sortOptions) => select => select.sort(sortOptions).limit(n),
     whereValueEquals: value => select => select.where({ value }),
   },
+  transform: doc => ({
+    ...doc,
+    value: doc.value !== undefined ? doc.value : 0,
+  }),
 });
 
 test('all().byId() selects empty object if state is empty', () => {
