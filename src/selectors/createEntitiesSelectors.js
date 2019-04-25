@@ -30,6 +30,7 @@ const property = propName => (state, props) => props[propName];
 
 const createEntitiesSelectors = (collection, {
   Model,
+  plugins,
   prefix = 'ddp',
 } = {}) => {
   const empty = {};
@@ -217,11 +218,11 @@ const createEntitiesSelectors = (collection, {
     whereIdEquals: selectId => createUtility(filter(selectDocs, createSelector(
       toSelector(selectId),
       id => (doc, docId) => id === docId,
-    ))),
+    )), selectSorter),
     whereIdMatchesProp: prop => createUtility(filter(selectDocs, createSelector(
       property(prop),
       id => (doc, docId) => id === docId,
-    ))),
+    )), selectSorter),
     satisfying: predicate => createUtility(filter(selectDocs, constant(predicate)), selectSorter),
     sort: selectAnotherSorter => createUtility(
       selectDocs,
@@ -245,7 +246,7 @@ const createEntitiesSelectors = (collection, {
       selectTransformedDocs(selectDocs, selectTransform),
       selectSorter,
     ),
-  });
+  }, mapValues(plugins, plugin => (...args) => plugin(...args)(createUtility(selectDocs, selectSorter))));
 
   const createAllUtility = (selectDocs, selectSorter) => assignMethods(
     createAllUtility,

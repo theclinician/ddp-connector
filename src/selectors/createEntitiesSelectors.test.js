@@ -50,7 +50,12 @@ const state2 = {
   },
 };
 
-const selectors = createEntitiesSelectors('collection');
+const selectors = createEntitiesSelectors('collection', {
+  plugins: {
+    nLargest: (n, sortOptions) => select => select.sort(sortOptions).limit(n),
+    whereValueEquals: value => select => select.where({ value }),
+  },
+});
 
 test('all().byId() selects empty object if state is empty', () => {
   expect(selectors.all().byId()(empty)).toEqual({});
@@ -99,6 +104,20 @@ test('all().sort({ value: -1 }).limit(2) selects two top values', () => {
     { id: 3, value: 2 },
     { id: 1, value: 1 },
   ]);
+});
+
+test('all().nLargest(2, { value: -1, id: 1 }) selects two top values', () => {
+  expect(selectors.all().nLargest(2, { value: -1, id: 1 })(state)).toEqual([
+    { id: 3, value: 2 },
+    { id: 1, value: 1 },
+  ]);
+});
+
+test('whereValueEquals() selects an element with the given value', () => {
+  expect(selectors.one().whereValueEquals(0)(state)).toEqual({
+    id: 4,
+    value: 0,
+  });
 });
 
 test('selects a document by id using legacy api', () => {
