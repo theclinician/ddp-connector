@@ -61,7 +61,7 @@ const createEntitiesSelectors = (collection, {
   } else if (transformRawObject) {
     mapOneObject = transformRawObject;
   }
-  const selectAll = transformRawObject
+  const selectAll = mapOneObject
     ? createValuesMappingSelector(
       selectEntitiesOrEmpty,
       mapOneObject,
