@@ -7,6 +7,7 @@ import mapValues from 'lodash/mapValues';
 import isPlainObject from 'lodash/isPlainObject';
 import matches from 'lodash/matches';
 import {
+  property,
   toSelector,
   createGetAtKey,
   createReconcilingSelector,
@@ -25,8 +26,6 @@ import {
 
 const identity = x => x;
 const constant = x => () => x;
-
-const property = propName => (state, props) => props[propName];
 
 const createEntitiesSelectors = (collection, {
   Model,
