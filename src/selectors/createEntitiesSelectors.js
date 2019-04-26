@@ -121,7 +121,7 @@ const createEntitiesSelectors = (collection, {
     return createSelector(
       idSelector,
       selectDocs,
-      (id, docs) => (id ? docs && docs[id] : null),
+      (id, docs) => (id ? docs && docs[id] : undefined),
     );
   };
 

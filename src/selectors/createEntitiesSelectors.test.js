@@ -75,7 +75,7 @@ test('one().byId() selects empty object if state is empty', () => {
 });
 
 test('one() selects nothing if state is empty', () => {
-  expect(selectors.one()(empty)).toEqual(null);
+  expect(selectors.one()(empty)).toBeUndefined();
 });
 
 test('one().whereIdEquals() selects a document by id', () => {

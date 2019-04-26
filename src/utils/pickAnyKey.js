@@ -7,7 +7,7 @@ const pickAnyKey = (object) => {
       return key;
     }
   }
-  return null;
+  return undefined;
 };
 
 export default pickAnyKey;
