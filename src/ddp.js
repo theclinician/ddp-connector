@@ -128,14 +128,22 @@ const ddp = ({
       this.id = uniqueId();
 
       this.updateSubscriptions = debounce(
-        subscriptions => ddpConnector.subsManager.updateRequests(this.id, subscriptions),
+        (subscriptions) => {
+          if (!this.unmounted) {
+            ddpConnector.subsManager.updateRequests(this.id, subscriptions);
+          }
+        },
         {
           ms: subscriptionsUpdateDelay !== undefined ? subscriptionsUpdateDelay : ddpConnector.resourceUpdateDelay,
         },
       );
 
       this.updateQueries = debounce(
-        queries => ddpConnector.queryManager.updateRequests(this.id, queries),
+        (queries) => {
+          if (!this.unmounted) {
+            ddpConnector.queryManager.updateRequests(this.id, queries);
+          }
+        },
         {
           ms: queriesUpdateDelay !== undefined ? queriesUpdateDelay : ddpConnector.resourceUpdateDelay,
         },
