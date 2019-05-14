@@ -1,6 +1,7 @@
 import isPlainObject from 'lodash/isPlainObject';
 import isArray from 'lodash/isArray';
 import isDate from 'lodash/isDate';
+import isRegExp from 'lodash/isRegExp';
 import sortBy from 'lodash/sortBy';
 import reduce from 'lodash/reduce';
 import map from 'lodash/map';
@@ -53,6 +54,7 @@ const createType = type => () => conditional(value => typeof value === type, def
 const createLiteral = literal => () => conditional(value => value === literal, constant(0));
 
 const pluginDate = () => conditional(isDate, defaultCompare);
+const pluginRegExp = () => conditional(isRegExp, defaultCompare);
 
 function createCompare(plugins) {
   let compiled;
@@ -77,6 +79,7 @@ const compare = createCompare([
   pluginArray,
   createType('boolean'),
   pluginDate,
+  pluginRegExp,
   createType('undefined'),
 ]);
 

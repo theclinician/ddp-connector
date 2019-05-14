@@ -27,9 +27,33 @@ describe('Test utility - compare', () => {
     expect(compare(true, new Date(0))).toEqual(-1);
     expect(compare(new Date(0), true)).toEqual(1);
   });
-  it('compares Date and undefined', () => {
-    expect(compare(new Date(0), undefined)).toEqual(-1);
-    expect(compare(undefined, new Date(0))).toEqual(1);
+  it('compares Date and RegExp', () => {
+    expect(compare(new Date(0), new RegExp(''))).toEqual(-1);
+    expect(compare(new RegExp(''), new Date(0))).toEqual(1);
+  });
+  it('compares RegExp and undefined', () => {
+    expect(compare(new RegExp(''), undefined)).toEqual(-1);
+    expect(compare(undefined, new RegExp(''))).toEqual(1);
+  });
+  it('compares two numbers', () => {
+    expect(compare(1, 2)).toEqual(-1);
+    expect(compare(2, 1)).toEqual(1);
+  });
+  it('compares two strings', () => {
+    expect(compare('a', 'b')).toEqual(-1);
+    expect(compare('b', 'a')).toEqual(1);
+  });
+  it('compares two booleans', () => {
+    expect(compare(false, true)).toEqual(-1);
+    expect(compare(true, false)).toEqual(1);
+  });
+  it('compares two dates', () => {
+    expect(compare(new Date('2019-01-01'), new Date('2019-01-02'))).toEqual(-1);
+    expect(compare(new Date('2019-01-02'), new Date('2019-01-01'))).toEqual(1);
+  });
+  it('compares two regular expressions', () => {
+    expect(compare(new RegExp('a'), new RegExp('b'))).toEqual(-1);
+    expect(compare(new RegExp('b'), new RegExp('a'))).toEqual(1);
   });
   it('compares empty objects', () => {
     expect(compare({}, {})).toEqual(0);
