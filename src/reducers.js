@@ -122,7 +122,10 @@ export const ddpReducer = (state = {}, action) => {
       break;
     }
     case '@@DDP/SET_RESTORING': {
-      if (!action.payload) {
+      // NOTE: Only replace original entities if the _entities object exists.
+      //       For example, this will not happen on initial load, before the
+      //       client lost connection for the first time.
+      if (!action.payload && nextState._entities) { // eslint-disable-line no-underscore-dangle
         nextState = {
           ...nextState,
           // eslint-disable-next-line no-underscore-dangle
