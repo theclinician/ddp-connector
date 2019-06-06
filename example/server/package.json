@@ -6,13 +6,10 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.1.2",
-    "@theclinician/ddp-client": "^0.5.2",
     "@theclinician/ddp-connector": "file:../..",
-    "babel-runtime": "^6.20.0",
     "flat": "^2.0.1",
-    "meteor-node-stubs": "~0.2.4",
-    "react": "^15.5.4",
-    "reselect": "^3.0.0",
+    "meteor-node-stubs": "^0.4.1",
+    "reselect": "^4.0.0",
     "very-simple-schema": "0.0.5"
   }
 }
