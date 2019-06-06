@@ -15,7 +15,7 @@ describe('Test SharedResource', () => {
     beforeEach(() => {
       testContext.resource = new SharedResource({
         cleanupDelay: 1000,
-        create:       cb => setTimeout(cb, 1000),
+        create: cb => setTimeout(cb, 1000),
       });
     });
 
@@ -37,12 +37,12 @@ describe('Test SharedResource', () => {
     beforeEach(() => {
       testContext.resource = new SharedResource({
         cleanupDelay: 1000,
-        create:       (() => {
+        create: (() => {
           let counter = 0;
           return cb => setTimeout(() => {
             counter += 1;
             if (counter % 2 === 1) {
-              cb(new Error('Broken.'));
+              cb(new Error('Resource is borken [test].'));
             } else {
               cb(null, 1234);
             }
@@ -60,7 +60,9 @@ describe('Test SharedResource', () => {
     describe('after the second try', () => {
       beforeEach(() => {
         jest.advanceTimersByTime(1000); // first wait until it breaks ...
-        // return this.users[0].promise.should.rejects.toThrow(Error, 'Broken.');
+        return testContext.users[0].promise.catch(() => {
+          // ignore error ...
+        });
       });
 
       beforeEach(() => {
