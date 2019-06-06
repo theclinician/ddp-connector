@@ -10,8 +10,7 @@ import {
   setLoggingIn,
   setUser,
   clearUser,
-  startRestoring,
-  finishRestoring,
+  setRestoring,
 
   createQuery,
   deleteQuery,
@@ -172,8 +171,16 @@ class DDPConnector extends EventEmitter {
   bindToStore(store) {
     const dispatch = store.dispatch.bind(store);
 
-    this.ddp.on('connected', () => dispatch(setConnected(true)));
-    this.ddp.on('disconnected', () => dispatch(setConnected(false)));
+    // NOTE: Since "status.connected" has effect on where exactly the entities
+    //       will be stored, we need to flush every time before the status changes.
+    this.ddp.on('connected', () => {
+      this.flushUpdates();
+      dispatch(setConnected(true));
+    });
+    this.ddp.on('disconnected', () => {
+      this.flushUpdates();
+      dispatch(setConnected(false));
+    });
 
     // subscriptions
     this.subsManager.on('create', ({ id, request }) => dispatch(createSubscription({ id, request })));
@@ -205,10 +212,10 @@ class DDPConnector extends EventEmitter {
     this.ddp.on('loggedIn', userId => dispatch(setUser({ _id: userId })));
     this.ddp.on('loggedOut', () => dispatch(clearUser()));
 
-    this.ddp.on('restoring', () => dispatch(startRestoring()));
+    this.ddp.on('restoring', () => dispatch(setRestoring(true)));
     this.ddp.on('restored', () => {
       this.flushUpdates();
-      dispatch(finishRestoring());
+      dispatch(setRestoring(false));
     });
   }
 

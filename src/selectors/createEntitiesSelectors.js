@@ -35,18 +35,11 @@ const createEntitiesSelectors = (collection, {
 } = {}) => {
   const empty = {};
 
-  const selectEntities = (state) => {
-    if (state &&
-        state[prefix] &&
-        state[prefix].status &&
-        state[prefix].status.restoring) {
-      return state[prefix].status.entities &&
-             state[prefix].status.entities[collection];
-    }
-    return state &&
-           state[prefix] &&
-           state[prefix].entities[collection];
-  };
+  const selectEntities = state => (
+    state &&
+    state[prefix] &&
+    state[prefix].entities[collection]
+  );
 
   // NOTE: Values mapping selector returns the unchanged value if it's empty. This
   //       means that if we pass null, then it will return the same null, not empty
