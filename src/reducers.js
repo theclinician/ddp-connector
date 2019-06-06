@@ -112,16 +112,8 @@ export const ddpReducer = (state = {}, action) => {
   let nextState = state;
   switch (action.type) {
     case '@@DDP/REPLACE_ENTITIES': {
-      const {
-        connected,
-        restoring,
-      } = state.status || {};
-      // NOTE: The reason we need alternative is meteor can potentially
-      //       send data for "null" subscriptions even before we explicitly
-      //       start the restoring process; and we want that data to end up
-      //       in _entities, because otherwise it will be lost for good
-      //       after the restoring process finishes.
-      if (!connected || restoring) {
+      // eslint-disable-next-line no-underscore-dangle
+      if (nextState._entities) {
         return {
           ...nextState,
           _entities: action.payload,
