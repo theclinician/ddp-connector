@@ -52,11 +52,12 @@
     "react-redux": "^6.0.0 || ^7.0.0"
   },
   "dependencies": {
-    "@theclinician/selectors": "^0.6.0",
-    "@theclinician/toolbelt": "^0.1.0",
+    "@theclinician/ddp-client": "^0.6.1",
+    "@theclinician/selectors": "^0.6.1",
+    "@theclinician/toolbelt": "^0.1.1",
     "ejson": "^2.1.2",
     "functional-red-black-tree": "^1.0.1",
-    "lodash": "^4.17.11",
+    "lodash": "^4.17.15",
     "prop-types": "^15.6.1",
     "react": "^16.8.6",
     "recompose": "^0.30.0",
