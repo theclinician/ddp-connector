@@ -1,5 +1,7 @@
 # ddp-connector
 
+[![Build Status](https://travis-ci.org/theclinician/ddp-connector.svg?branch=master)](https://travis-ci.org/theclinician/ddp-connector)
+
 DDP client bindings for react-redux
 
 ## Installation
