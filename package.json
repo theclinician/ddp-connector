@@ -36,7 +36,7 @@
     "@babel/plugin-proposal-object-rest-spread": "^7.3.2",
     "@babel/plugin-syntax-object-rest-spread": "^7.2.0",
     "@babel/polyfill": "^7.2.5",
-    "@babel/preset-env": "^7.3.1",
+    "@babel/preset-env": "^7.7.7",
     "@babel/preset-react": "^7.0.0",
     "babel-eslint": "^10.0.1",
     "babel-jest": "^24.1.0",
@@ -44,7 +44,7 @@
     "eslint-config-airbnb-base": "^13.1.0",
     "eslint-import-resolver-meteor": "^0.4.0",
     "eslint-plugin-import": "^2.14.0",
-    "jest": "^24.8.0",
+    "jest": "^24.9.0",
     "npm-watch": "0.3.0",
     "rimraf": "^2.6.1"
   },
