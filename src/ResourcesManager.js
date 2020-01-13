@@ -12,6 +12,7 @@ class ResourcesManager extends EventEmitter {
   constructor({
     resourcesFactory,
     cleanupDelay,
+    cleanupDelayOnError,
   } = {}) {
     super();
 
@@ -21,6 +22,7 @@ class ResourcesManager extends EventEmitter {
 
     this.resourcesFactory = resourcesFactory;
     this.cleanupDelay = cleanupDelay;
+    this.cleanupDelayOnError = cleanupDelayOnError;
   }
 
   nextUniqueId() {
@@ -44,6 +46,16 @@ class ResourcesManager extends EventEmitter {
     return 0;
   }
 
+  getCleanupDelayOnError(request) {
+    if (typeof this.cleanupDelayOnError === 'function') {
+      return this.cleanupDelayOnError(request);
+    }
+    if (typeof this.cleanupDelayOnError === 'number') {
+      return this.cleanupDelayOnError;
+    }
+    return 0;
+  }
+
   getOrCreateResource(request) {
     let resource = this.resourcesTree.get(request);
     if (!resource) {
@@ -56,20 +68,24 @@ class ResourcesManager extends EventEmitter {
             if (!error) {
               this.emit('ready', { id, value });
             } else {
+              console.error(`While requesting resource id ${id}`, request, error);
               this.emit('error', { id, error });
             }
             cb(error, value);
           }));
-          return () => {
+          return (refreshOnly) => {
             if (handle) {
               handle.stop();
               handle = null;
             }
-            this.resourcesTree = this.resourcesTree.remove(request);
-            this.emit('delete', { id, request });
+            if (!refreshOnly) {
+              this.resourcesTree = this.resourcesTree.remove(request);
+              this.emit('delete', { id, request });
+            }
           };
         },
         cleanupDelay: this.getCleanupDelay(request),
+        cleanupDelayOnError: this.getCleanupDelayOnError(request),
       });
       resource.id = id;
       resource.request = request;
@@ -108,10 +124,9 @@ class ResourcesManager extends EventEmitter {
       if (!listener.byResourceId[id]) {
         listener.byResourceId[id] = resource.require();
       }
-      const { promise } = listener.byResourceId[id];
-      promise.catch((err) => {
-        console.error(`While requesting resource id ${id}`, request, err);
-      });
+      const {
+        promise,
+      } = listener.byResourceId[id];
       promises[id] = promise;
     });
 

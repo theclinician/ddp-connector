@@ -13,11 +13,11 @@ describe('Test ResourcesManager', () => {
     });
   });
 
-  test('accpets listener with no resources', () => {
+  test('accepts listener with no resources', () => {
     expect(manager.updateRequests('1', [])).toEqual([]);
   });
 
-  test('accpets listener with single resources', () => {
+  test('accepts listener with single resources', () => {
     expect(manager.updateRequests('1', [{
       name: 'a',
       params: {
@@ -29,7 +29,7 @@ describe('Test ResourcesManager', () => {
     ]);
   });
 
-  test('accpets listener with multiple resources', () => {
+  test('accepts listener with multiple resources', () => {
     expect(manager.updateRequests('1', [{
       name: 'a',
       params: {
@@ -48,7 +48,7 @@ describe('Test ResourcesManager', () => {
     ]);
   });
 
-  test('accpets requests from multiple clients', () => {
+  test('accepts requests from multiple clients', () => {
     expect(manager.updateRequests('1', [{
       name: 'a',
       params: {

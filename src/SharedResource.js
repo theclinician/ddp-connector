@@ -1,10 +1,13 @@
-import { debounce } from '@theclinician/toolbelt';
 import { once } from './utils.js';
+
+const defaultGetDate = () => new Date();
 
 class SharedResource {
   constructor({
     create,
     cleanupDelay = 5000,
+    cleanupDelayOnError = 1000,
+    getDate = defaultGetDate,
   } = {}) {
     this.create = create;
     this.nUsers = 0;
@@ -12,9 +15,25 @@ class SharedResource {
     this.destroy = null;
     this.promise = null;
 
-    this.scheduleCleanup = debounce(() => {
+    this.error = null;
+    this.errorAt = null;
+
+    this.getDate = getDate;
+    this.cleanupHandle = null;
+    this.cleanupDelay = cleanupDelay;
+    this.cleanupDelayOnError = cleanupDelayOnError;
+  }
+
+  scheduleCleanup() {
+    if (this.cleanupHandle) {
+      clearTimeout(this.cleanupHandle);
+    }
+    const delayMs = this.error
+      ? this.cleanupDelayOnError
+      : this.cleanupDelay;
+    this.cleanupHandle = setTimeout(() => {
       this.maybeCleanup();
-    }, { ms: cleanupDelay });
+    }, delayMs);
   }
 
   getNumberOfUsers() {
@@ -31,35 +50,46 @@ class SharedResource {
     }
   }
 
-  cleanup() {
+  cleanup(refreshOnly = false) {
+    if (this.cleanupHandle) {
+      clearTimeout(this.cleanupHandle);
+      this.cleanupHandle = null;
+    }
     if (typeof this.destroy === 'function') {
-      this.destroy();
+      this.destroy(refreshOnly);
     }
     this.destroy = null;
     this.promise = null;
+    this.error = null;
+    this.errorAt = null;
   }
 
   refresh() {
-    this.promise = new Promise((resolve, reject) => {
+    // NOTE: By passing "true" we indicate that we don't want to destroy the
+    //       resource completely. Instead, we just want to stop the related
+    //       handlers (if any), e.g. call sub.stop().
+    this.cleanup(true);
+
+    this.promise = new Promise((resolve) => {
       this.destroy = this.create(once((err, res) => {
         if (err) {
-          // NOTE: Because of calling "cleanup" a resource will be requested again on next try
-          //       after a failure. Though, in general, this may not be an optimal strategy.
-          //       Instead we should probably throttle calls and limit the number of retires.
-          this.cleanup();
-          reject(err);
+          this.error = err;
+          this.errorAt = this.getDate();
+          resolve(null);
         } else {
           resolve(res);
         }
       }));
     });
+
     return {
       promise: this.promise,
     };
   }
 
   require() {
-    if (!this.promise) {
+    const dateNow = this.getDate();
+    if (!this.promise || (this.error && dateNow - this.errorAt >= this.cleanupDelayOnError)) {
       this.promise = this.refresh().promise;
     }
 

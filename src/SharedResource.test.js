@@ -34,15 +34,18 @@ describe('Test SharedResource', () => {
   });
 
   describe('Given the resource is broken', () => {
+    let ts = Date.now();
     beforeEach(() => {
       testContext.resource = new SharedResource({
+        getDate: () => new Date(ts),
         cleanupDelay: 1000,
+        cleanupDelayOnError: 500,
         create: (() => {
           let counter = 0;
           return cb => setTimeout(() => {
             counter += 1;
             if (counter % 2 === 1) {
-              cb(new Error('Resource is borken [test].'));
+              cb(new Error('Resource is broken [test].'));
             } else {
               cb(null, 1234);
             }
@@ -66,6 +69,7 @@ describe('Test SharedResource', () => {
       });
 
       beforeEach(() => {
+        ts += 1000;
         testContext.users[1] = testContext.resource.require();
       });
 
@@ -107,7 +111,7 @@ describe('Test SharedResource', () => {
         expect(testContext.resource.getNumberOfUsers()).toBe(0);
       });
 
-      test('the resource should not be removed immediatelly', () => {
+      test('the resource should not be removed immediately', () => {
         expect(testContext.resource.isClean()).toBe(false);
       });
 
@@ -187,7 +191,7 @@ describe('Test SharedResource', () => {
         expect(testContext.resource.getNumberOfUsers()).toBe(1);
       });
 
-      test('the resource should not be removed immediatelly', () => {
+      test('the resource should not be removed immediately', () => {
         expect(testContext.resource.isClean()).toBe(false);
       });
 
@@ -222,7 +226,7 @@ describe('Test SharedResource', () => {
         expect(testContext.resource.getNumberOfUsers()).toBe(0);
       });
 
-      test('the resource should not be removed immediatelly', () => {
+      test('the resource should not be removed immediately', () => {
         expect(testContext.resource.isClean()).toBe(false);
       });
 

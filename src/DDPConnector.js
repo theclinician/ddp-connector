@@ -30,6 +30,7 @@ class DDPConnector extends EventEmitter {
     debug,
     ddpClient,
     cleanupDelay = 60 * 1000,
+    cleanupDelayOnError = 1000,
     entitiesUpdateDelay = 100,
     resourceUpdateDelay = 100,
     getMessageChannel = null,
@@ -75,6 +76,7 @@ class DDPConnector extends EventEmitter {
 
     this.subsManager = new ResourcesManager({
       cleanupDelay,
+      cleanupDelayOnError,
       resourcesFactory: (request, requestMeta, cb) => {
         const {
           name,
@@ -104,6 +106,7 @@ class DDPConnector extends EventEmitter {
 
     this.queryManager = new ResourcesManager({
       cleanupDelay,
+      cleanupDelayOnError,
       resourcesFactory: (request, requestMeta, cb) => {
         const {
           name,
@@ -190,7 +193,17 @@ class DDPConnector extends EventEmitter {
       this.flushUpdates();
       dispatch(updateSubscription({ id, ready: true }));
     });
-    this.subsManager.on('error', ({ id }) => dispatch(updateSubscription({ id, error: true })));
+    this.subsManager.on('error', ({ id, error }) => {
+      this.flushUpdates();
+      dispatch(updateSubscription({
+        id,
+        error: {
+          error: error.error,
+          reason: error.reason,
+          message: error.message,
+        },
+      }));
+    });
 
     // queries
     this.queryManager.on('create', ({ id, request }) => dispatch(createQuery({ id, request })));
@@ -200,7 +213,17 @@ class DDPConnector extends EventEmitter {
       this.flushUpdates();
       dispatch(updateQuery({ id, value, ready: true }));
     });
-    this.queryManager.on('error', ({ id }) => dispatch(updateQuery({ id, error: true })));
+    this.queryManager.on('error', ({ id, error }) => {
+      this.flushUpdates();
+      dispatch(updateQuery({
+        id,
+        error: {
+          error: error.error,
+          reason: error.reason,
+          message: error.message,
+        },
+      }));
+    });
 
     // entities
     this.on('flush', entities => dispatch(replaceEntities(entities)));
