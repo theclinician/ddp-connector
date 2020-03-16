@@ -113,7 +113,7 @@ class ResourcesManager extends EventEmitter {
   }
 
   updateRequests(listenerId, requests) {
-    const promises = {};
+    const nextResources = {};
     const listener = this.getOrCreateListener(listenerId);
 
     forEach(requests, (request) => {
@@ -123,25 +123,25 @@ class ResourcesManager extends EventEmitter {
       const { id, resource } = this.getOrCreateResource(request);
       if (!listener.byResourceId[id]) {
         listener.byResourceId[id] = resource.require();
+        listener.byResourceId[id].promise.catch(() => {
+          // we are only catching the promise here to prevent uncaught promise warning
+        });
       }
-      const {
-        promise,
-      } = listener.byResourceId[id];
-      promises[id] = promise;
+      nextResources[id] = listener.byResourceId[id];
     });
 
     forEach(listener.byResourceId, ({ release }, id) => {
-      if (!has(promises, id)) {
+      if (!has(nextResources, id)) {
         release();
         delete listener.byResourceId[id];
       }
     });
 
-    if (isEmpty(promises)) {
+    if (isEmpty(nextResources)) {
       delete this.listeners[listenerId];
     }
 
-    return keys(promises);
+    return keys(nextResources);
   }
 }
 

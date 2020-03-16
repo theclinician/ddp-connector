@@ -70,27 +70,27 @@ class SharedResource {
     //       handlers (if any), e.g. call sub.stop().
     this.cleanup(true);
 
-    this.promise = new Promise((resolve) => {
+    this.promise = new Promise((resolve, reject) => {
       this.destroy = this.create(once((err, res) => {
         if (err) {
           this.error = err;
           this.errorAt = this.getDate();
-          resolve(null);
+          reject(err);
         } else {
           resolve(res);
         }
       }));
     });
 
-    return {
-      promise: this.promise,
-    };
+    return this.promise;
   }
 
   require() {
     const dateNow = this.getDate();
+
+    let promise;
     if (!this.promise || (this.error && dateNow - this.errorAt >= this.cleanupDelayOnError)) {
-      this.promise = this.refresh().promise;
+      promise = this.refresh();
     }
 
     const release = once(() => {
@@ -102,9 +102,9 @@ class SharedResource {
 
     this.nUsers += 1;
     return {
-      // NOTE: At this point, this.promise can already be "null" (if create erred immediately),
-      //       but we still return a valid promise because the user will rely on it.
-      promise: this.promise,
+      // NOTE: This promise is currently only relevant for tests. Resources manager
+      //       ignores it completely at the moment.
+      promise: Promise.resolve(promise),
       release,
     };
   }
