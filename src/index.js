@@ -4,7 +4,7 @@ import ddp from './ddp';
 import { ddpReducer } from './reducers';
 import useDDPQuery from './useDDPQuery';
 import useDDPSubscription from './useDDPSubscription';
-import useDDPMutation from './useDDPMutation';
+import useDDPCall from './useDDPCall';
 
 export default DDPConnector;
 export {
@@ -13,7 +13,7 @@ export {
   ddp,
   useDDPQuery,
   useDDPSubscription,
-  useDDPMutation,
+  useDDPCall,
 };
 
 export * from './selectors';
