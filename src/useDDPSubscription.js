@@ -12,7 +12,7 @@ import {
 import {
   DDPContext,
 } from './DDPProvider';
-import useReconcile from './useReconcile';
+import useDebounce from './useDebounce';
 import createResourcesSelectorFactory from './selectors/createResourcesSelectorFactory';
 
 const createSubscriptionsSelector = createResourcesSelectorFactory('subscriptions');
@@ -31,9 +31,12 @@ const createSubscriptionSelector = request => createSelector(
   subscriptions => subscriptions[0],
 );
 
-const useDDPSubscription = (request) => {
+const useDDPSubscription = (request, options) => {
   const ddpConnector = useContext(DDPContext);
-  const currentRequest = useReconcile(request);
+  const currentRequest = useDebounce(
+    request,
+    options && options.debounceMs,
+  );
   const selectSubscription = useMemo(
     () => createSubscriptionSelector(currentRequest),
     [

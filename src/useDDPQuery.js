@@ -12,7 +12,7 @@ import {
 import {
   DDPContext,
 } from './DDPProvider';
-import useReconcile from './useReconcile';
+import useDebounce from './useDebounce';
 import createResourcesSelectorFactory from './selectors/createResourcesSelectorFactory';
 
 const createQueriesSelector = createResourcesSelectorFactory('query');
@@ -31,9 +31,12 @@ const createQuerySelector = request => createSelector(
   subscriptions => subscriptions[0],
 );
 
-const useDDPQuery = (request) => {
+const useDDPQuery = (request, options) => {
   const ddpConnector = useContext(DDPContext);
-  const currentRequest = useReconcile(request);
+  const currentRequest = useDebounce(
+    request,
+    options && options.debounceMs,
+  );
   const selectQuery = useMemo(
     () => createQuerySelector(currentRequest),
     [
