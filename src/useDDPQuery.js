@@ -33,14 +33,17 @@ const createQuerySelector = request => createSelector(
 
 const useDDPQuery = (request, options) => {
   const ddpConnector = useContext(DDPContext);
-  const currentRequest = useDebounce(
+  const [
+    currentRequest,
+    nextRequest,
+  ] = useDebounce(
     request,
     options && options.debounceMs,
   );
   const selectQuery = useMemo(
-    () => createQuerySelector(currentRequest),
+    () => createQuerySelector(nextRequest),
     [
-      currentRequest,
+      nextRequest,
     ],
   );
   useEffect(

@@ -17,9 +17,9 @@ const useDebounce = (newValue, debounceMs = 0) => {
   useEffect(
     () => {
       let handle;
-      if (debounceMs > 0 && !isEqual(value, newValue)) {
+      if (debounceMs > 0 && !isEqual(value, memo.current)) {
         handle = setTimeout(() => {
-          setValue(newValue);
+          setValue(memo.current);
         }, debounceMs);
       }
       return () => {
@@ -30,15 +30,15 @@ const useDebounce = (newValue, debounceMs = 0) => {
       };
     },
     [
-      newValue,
+      memo.current,
       value,
       setValue,
     ],
   );
-  if (debounceMs > 0) {
-    return value;
-  }
-  return memo.current;
+  return [
+    debounceMs > 0 ? value : memo.current,
+    memo.current,
+  ];
 };
 
 export default useDebounce;

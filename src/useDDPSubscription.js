@@ -33,14 +33,17 @@ const createSubscriptionSelector = request => createSelector(
 
 const useDDPSubscription = (request, options) => {
   const ddpConnector = useContext(DDPContext);
-  const currentRequest = useDebounce(
+  const [
+    currentRequest,
+    nextRequest,
+  ] = useDebounce(
     request,
     options && options.debounceMs,
   );
   const selectSubscription = useMemo(
-    () => createSubscriptionSelector(currentRequest),
+    () => createSubscriptionSelector(nextRequest),
     [
-      currentRequest,
+      nextRequest,
     ],
   );
   useEffect(
