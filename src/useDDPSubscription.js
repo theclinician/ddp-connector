@@ -1,3 +1,5 @@
+import isNil from 'lodash/isNil';
+import isPlainObject from 'lodash/isPlainObject';
 import {
   useMemo,
   useEffect,
@@ -31,6 +33,8 @@ const createSubscriptionSelector = request => createSelector(
   subscriptions => subscriptions[0],
 );
 
+const noop = () => {};
+
 const useDDPSubscription = (request, options) => {
   const ddpConnector = useContext(DDPContext);
   const [
@@ -48,6 +52,12 @@ const useDDPSubscription = (request, options) => {
   );
   useEffect(
     () => {
+      if (isNil(currentRequest)) {
+        return noop;
+      }
+      if (!isPlainObject(currentRequest)) {
+        throw new Error('Subscription request must be a plain object');
+      }
       const {
         resource,
       } = ddpConnector
