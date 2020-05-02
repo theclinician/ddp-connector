@@ -35,14 +35,19 @@ const createQuerySelector = request => createSelector(
 
 const noop = () => {};
 
-const useDDPQuery = (request, options) => {
+const useDDPQuery = (request, options = {}) => {
+  const {
+    onReady,
+    onError,
+    debounceMs,
+  } = options;
   const ddpConnector = useContext(DDPContext);
   const [
     currentRequest,
     nextRequest,
   ] = useDebounce(
     request,
-    options && options.debounceMs,
+    debounceMs,
   );
   const selectQuery = useMemo(
     () => createQuerySelector(nextRequest),
@@ -62,7 +67,10 @@ const useDDPQuery = (request, options) => {
         resource,
       } = ddpConnector
         .queryManager
-        .getOrCreateResource(currentRequest);
+        .getOrCreateResource(currentRequest, {
+          onReady,
+          onError,
+        });
       let handle = resource.require();
       return () => {
         if (handle) {

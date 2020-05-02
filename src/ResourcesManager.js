@@ -56,7 +56,10 @@ class ResourcesManager extends EventEmitter {
     return 0;
   }
 
-  getOrCreateResource(request) {
+  getOrCreateResource(request, {
+    onReady,
+    onError,
+  } = {}) {
     let resource = this.resourcesTree.get(request);
     if (!resource) {
       const id = this.nextUniqueId();
@@ -67,9 +70,15 @@ class ResourcesManager extends EventEmitter {
           let handle = this.resourcesFactory(request, requestMeta, once((error, value) => {
             if (!error) {
               this.emit('ready', { id, value });
+              if (onReady) {
+                onReady(value);
+              }
             } else {
               console.error(`While requesting resource id ${id}`, request, error);
               this.emit('error', { id, error });
+              if (onError) {
+                onError(error);
+              }
             }
             cb(error, value);
           }));

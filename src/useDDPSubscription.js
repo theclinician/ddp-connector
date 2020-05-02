@@ -35,14 +35,19 @@ const createSubscriptionSelector = request => createSelector(
 
 const noop = () => {};
 
-const useDDPSubscription = (request, options) => {
+const useDDPSubscription = (request, options = {}) => {
+  const {
+    onReady,
+    onError,
+    debounceMs,
+  } = options;
   const ddpConnector = useContext(DDPContext);
   const [
     currentRequest,
     nextRequest,
   ] = useDebounce(
     request,
-    options && options.debounceMs,
+    debounceMs,
   );
   const selectSubscription = useMemo(
     () => createSubscriptionSelector(nextRequest),
@@ -62,7 +67,10 @@ const useDDPSubscription = (request, options) => {
         resource,
       } = ddpConnector
         .subsManager
-        .getOrCreateResource(currentRequest);
+        .getOrCreateResource(currentRequest, {
+          onReady,
+          onError,
+        });
       let handle = resource.require();
       return () => {
         if (handle) {
