@@ -67,11 +67,11 @@ const useDDPSubscription = (request, options = {}) => {
         resource,
       } = ddpConnector
         .subsManager
-        .getOrCreateResource(currentRequest, {
-          onReady,
-          onError,
-        });
+        .getOrCreateResource(currentRequest);
       let handle = resource.require();
+      if (onReady || onError) {
+        handle.promise.then(onReady, onError);
+      }
       return () => {
         if (handle) {
           handle.release();
