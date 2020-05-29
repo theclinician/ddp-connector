@@ -157,7 +157,7 @@ const createEntitiesSelectors = (collection, {
         (docs, predicateValues) => {
           const results = {};
           forEach(predicateValues, (accepted, id) => {
-            if (accepted) {
+            if (accepted && docs[id]) {
               results[id] = docs[id];
             }
           });
