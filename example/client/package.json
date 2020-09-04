@@ -18,7 +18,7 @@
     "very-simple-schema": "0.0.5"
   },
   "devDependencies": {
-    "react-scripts": "^3.0.1",
+    "react-scripts": "^3.4.3",
     "source-map-explorer": "^1.7.0"
   },
   "proxy": "http://localhost:4000",
