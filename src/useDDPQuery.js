@@ -17,7 +17,7 @@ import {
 import useDebounce from './useDebounce';
 import createResourcesSelectorFactory from './selectors/createResourcesSelectorFactory';
 
-const createQueriesSelector = createResourcesSelectorFactory('query');
+const createQueriesSelector = createResourcesSelectorFactory('queries');
 
 const constant = x => () => x;
 const createQuerySelector = request => createSelector(
@@ -30,7 +30,7 @@ const createQuerySelector = request => createSelector(
       ...state,
     }),
   ),
-  subscriptions => subscriptions[0],
+  queries => queries[0],
 );
 
 const noop = () => {};

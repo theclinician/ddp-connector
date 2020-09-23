@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import {
   createStructuredSelector,
 } from 'reselect';
-import { ddp } from '@theclinician/ddp-connector';
+import { ddp, useDDPQuery, useDDPSubscription } from '@theclinician/ddp-connector';
 import { connect } from 'react-redux';
 import {
   compose,
@@ -56,12 +56,13 @@ const Lists = compose(
   })),
   ddp({
     subscriptions: (state, { listId }) => [
+      undefined,
       oneList.withParams({ listId }),
       todosInList.withParams({ listId }),
-      null, // should be treated as always ready
+      undefined, // should be treated as always ready
     ],
     queries: (state, { listId }) => ({
-      stats: getListStats.withParams({ listId }),
+      a: undefined,
       pleaseIgnoreThisOne: null, // should be treated as always ready
     }),
   }),
@@ -92,35 +93,51 @@ const Lists = compose(
   }),
 )(({
   list,
+  listId,
   todos,
   name,
-  stats,
   setName,
   onAddTodo,
   onChangeName,
   onUpdateTodo,
-}) => (
-  <div>
-    <Link to="/lists/">Back</Link>
-    <h1>
-      {list && list.getTitle()}
-      {stats && <span>
-        &nbsp;({stats.done}/{stats.done + stats.notDone})
-      </span>}
-    </h1>
-    
-    <ul>
-      {todos.map(todo => (
-        <ListItem key={todo._id} todo={todo} onUpdate={onUpdateTodo} />
-      ))}
-      <li>
-        <input value={name} onChange={onChangeName}/>
-        <button onClick={onAddTodo}>
-          Add
-        </button>
-      </li>
-    </ul>
-  </div>
-));
+}) => {
+  const {
+    value: stats,
+  } = useDDPQuery(
+    getListStats.withParams({ listId }),
+  );
+  const {
+    ready: queryReady,
+  } = useDDPQuery(undefined);
+  const {
+    ready: subscriptionReady,
+  } = useDDPSubscription(undefined);
+  if (!subscriptionReady || !queryReady) {
+    return null;
+  }
+  return (
+    <div>
+      <Link to="/lists/">Back</Link>
+      <h1>
+        {list && list.getTitle()}
+        {stats && <span>
+          &nbsp;({stats.done}/{stats.done + stats.notDone})
+        </span>}
+      </h1>
+      
+      <ul>
+        {todos.map(todo => (
+          <ListItem key={todo._id} todo={todo} onUpdate={onUpdateTodo} />
+        ))}
+        <li>
+          <input value={name} onChange={onChangeName}/>
+          <button onClick={onAddTodo}>
+            Add
+          </button>
+        </li>
+      </ul>
+    </div>
+  )
+});
 
 export default Lists;
