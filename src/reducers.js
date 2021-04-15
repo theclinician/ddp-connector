@@ -2,6 +2,7 @@ import omit from 'lodash/omit';
 import mapValues from 'lodash/mapValues';
 import { handleActions } from 'redux-actions';
 import { shallowEqual } from 'recompose';
+import { reconcile } from '@theclinician/selectors';
 import {
   setConnected,
   createSubscription,
@@ -18,12 +19,6 @@ import {
 } from './actions.js';
 
 const identity = x => x;
-
-class User {
-  constructor(doc) {
-    Object.assign(this, doc);
-  }
-}
 
 export const statusReducer = handleActions({
   [setConnected]: (state, { payload }) => ({
@@ -50,10 +45,10 @@ export const currentUserReducer = handleActions({
     isLoggingIn: false,
     // eslint-disable-next-line no-underscore-dangle
     userId: payload._id,
-    user: new User({
+    user: {
       ...state.user,
       ...payload,
-    }),
+    },
   }),
 
   [clearUser]: state => ({
@@ -67,12 +62,6 @@ export const currentUserReducer = handleActions({
   user: null,
   isLoggingIn: false,
 });
-
-export const entitiesReducer = handleActions({
-  [replaceEntities]: (state, { payload: entities }) => ({
-    ...entities,
-  }),
-}, {});
 
 export const subscriptionsReducer = handleActions({
   [createSubscription]: (state, { payload: { id, ...fields } }) => ({
@@ -108,15 +97,24 @@ export const queriesReducer = handleActions({
   [deleteQuery]: (state, { payload: { id } }) => omit(state, [id]),
 }, {});
 
-export const ddpReducer = (state = {}, action) => {
+export const ddpReducer = (state = {
+  entities: {},
+}, action) => {
   let nextState = state;
   switch (action.type) {
     case '@@DDP/REPLACE_ENTITIES': {
+      // NOTE: If _entities is present, it means we are currently
+      //       in "restoring" mode, so we update _entities rather than entities.
       // eslint-disable-next-line no-underscore-dangle
       if (nextState._entities) {
-        return {
+        nextState = {
           ...nextState,
           _entities: action.payload,
+        };
+      } else {
+        nextState = {
+          ...nextState,
+          entities: action.payload,
         };
       }
       break;
@@ -125,11 +123,25 @@ export const ddpReducer = (state = {}, action) => {
       // NOTE: Only replace original entities if the _entities object exists.
       //       For example, this will not happen on initial load, before the
       //       client lost connection for the first time.
-      if (!action.payload && nextState._entities) { // eslint-disable-line no-underscore-dangle
+      const isRestoring = !!action.payload;
+      // eslint-disable-next-line no-underscore-dangle
+      if (isRestoring) {
+        // NOTE: We don't modify _entities if it is already present because
+        //       this field will be typically set to an empty object on disconnect,
+        //       and it the meantime it may already accumulate some data.
         nextState = {
           ...nextState,
+          _entities: nextState._entities || {},
+        };
+      } else {
+        nextState = {
+          ...nextState,
+          // NOTE: We reconcile because we don't want objects that hasn't changed
+          //       to be replaced. This is because sometimes there is an assumption
+          //       that if noting changes then selector returns exactly the same
+          //       document, which is important for performance optimizations.
           // eslint-disable-next-line no-underscore-dangle
-          entities: nextState._entities,
+          entities: reconcile(nextState.entities, nextState._entities || {}),
         };
         // eslint-disable-next-line no-underscore-dangle
         delete nextState._entities;
@@ -137,11 +149,21 @@ export const ddpReducer = (state = {}, action) => {
       break;
     }
     case '@@DDP/SET_CONNECTED': {
-      if (!action.payload) {
+      const isConnected = !!action.payload;
+      if (!isConnected) {
         nextState = {
           ...nextState,
           _entities: {},
         };
+      } else if (!nextState.status || !nextState.status.restoring) {
+        // NOTE: If restoring flag is set, the entities will be reconciled after restoring is finished.
+        nextState = {
+          ...nextState,
+          // eslint-disable-next-line no-underscore-dangle
+          entities: reconcile(nextState.entities, nextState._entities || {}),
+        };
+        // eslint-disable-next-line no-underscore-dangle
+        delete nextState._entities;
       }
       break;
     }
@@ -151,7 +173,7 @@ export const ddpReducer = (state = {}, action) => {
   // apply child reducers
   nextState = mapValues({
     status: statusReducer,
-    entities: entitiesReducer,
+    entities: identity,
     _entities: identity,
     queries: queriesReducer,
     subscriptions: subscriptionsReducer,
