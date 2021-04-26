@@ -53,7 +53,7 @@
     "react-redux": "^7.0.0"
   },
   "dependencies": {
-    "@theclinician/ddp-client": "^0.6.1",
+    "@theclinician/ddp-client": "^0.8.0-rc1",
     "@theclinician/selectors": "^0.7.0",
     "@theclinician/toolbelt": "^0.1.1",
     "ejson": "^2.1.2",

@@ -38,6 +38,7 @@ const createEntitiesSelectors = (collection, {
   const selectEntities = state => (
     state &&
     state[prefix] &&
+    state[prefix].entities &&
     state[prefix].entities[collection]
   );
 
