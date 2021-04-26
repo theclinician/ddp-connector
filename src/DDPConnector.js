@@ -1,6 +1,6 @@
 import React from 'react';
+import EventEmitter from 'eventemitter3';
 import {
-  EventEmitter,
   SHA256,
 } from '@theclinician/toolbelt';
 import ResourcesManager from './ResourcesManager.js';
@@ -24,6 +24,12 @@ import {
 } from './actions.js';
 
 const identity = x => x;
+const errors = [
+  'loginError',
+  'resumeLoginError',
+  'logoutError',
+  'error',
+];
 
 class DDPConnector extends EventEmitter {
   constructor({
@@ -59,20 +65,18 @@ class DDPConnector extends EventEmitter {
       this.flushUpdates();
     });
 
-    this.ddp.pipe([
-      'loginError',
-      'resumeLoginError',
-      'logoutError',
-      'error',
-    ], this);
-
     // NOTE: If there are not explicit handlers for these errors,
     //       they will at least be printed into the console.
-    this.captureUnhandledErrors([
-      'resumeLoginError',
-      'logoutError',
-      'error',
-    ]);
+    errors.forEach((name) => {
+      this.ddp.on(name, (...args) => {
+        this.emit(name, ...args);
+      });
+      this.on(name, (...args) => {
+        if (this.listenerCount(name) <= 1) {
+          console.error(...args);
+        }
+      });
+    });
 
     this.subsManager = new ResourcesManager({
       cleanupDelay,

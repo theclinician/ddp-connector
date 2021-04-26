@@ -8,9 +8,7 @@ import map from 'lodash/map';
 import isArray from 'lodash/isArray';
 import mapValues from 'lodash/mapValues';
 import isEmpty from 'lodash/isEmpty';
-import {
-  debounce,
-} from '@theclinician/toolbelt';
+import debounce from 'lodash/debounce';
 import {
   toSelector,
   createDeepEqualSelector,
@@ -133,9 +131,7 @@ const ddp = ({
             ddpConnector.subsManager.updateRequests(this.id, subscriptions);
           }
         },
-        {
-          ms: subscriptionsUpdateDelay !== undefined ? subscriptionsUpdateDelay : ddpConnector.resourceUpdateDelay,
-        },
+        subscriptionsUpdateDelay !== undefined ? subscriptionsUpdateDelay : ddpConnector.resourceUpdateDelay,
       );
 
       this.updateQueries = debounce(
@@ -144,9 +140,7 @@ const ddp = ({
             ddpConnector.queryManager.updateRequests(this.id, queries);
           }
         },
-        {
-          ms: queriesUpdateDelay !== undefined ? queriesUpdateDelay : ddpConnector.resourceUpdateDelay,
-        },
+        queriesUpdateDelay !== undefined ? queriesUpdateDelay : ddpConnector.resourceUpdateDelay,
       );
 
       this.messagesListeners = map(

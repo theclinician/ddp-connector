@@ -2,7 +2,7 @@ import forEach from 'lodash/forEach';
 import isEmpty from 'lodash/isEmpty';
 import keys from 'lodash/keys';
 import has from 'lodash/has';
-import { EventEmitter } from '@theclinician/toolbelt';
+import EventEmitter from 'eventemitter3';
 import createTree from 'functional-red-black-tree';
 import SharedResource from './SharedResource.js';
 import { once } from './utils.js';

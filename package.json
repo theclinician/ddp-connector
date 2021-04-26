@@ -57,6 +57,7 @@
     "@theclinician/selectors": "^0.7.0",
     "@theclinician/toolbelt": "^0.1.1",
     "ejson": "^2.1.2",
+    "eventemitter3": "^4.0.7",
     "functional-red-black-tree": "^1.0.1",
     "lodash": "^4.17.20",
     "prop-types": "^15.6.1",
