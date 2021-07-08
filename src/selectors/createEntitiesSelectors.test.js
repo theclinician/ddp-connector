@@ -8,6 +8,7 @@ const empty = {};
 const state = {
   ddp: {
     status: {
+      userId: '1234',
     },
     entities: {
       collection: {
@@ -51,15 +52,36 @@ const state2 = {
   },
 };
 
+const state3 = {
+  ...state,
+  ddp: {
+    ...state.ddp,
+    status: {
+      ...state.ddp.status,
+      userId: null,
+    },
+  },
+};
+
 const selectors = createEntitiesSelectors('collection', {
   plugins: {
     nLargest: (n, sortOptions) => select => select.sort(sortOptions).limit(n),
     whereValueEquals: value => select => select.where({ value }),
   },
-  transform: doc => ({
-    ...doc,
-    value: doc.value !== undefined ? doc.value : 0,
-  }),
+  transform: (doc, userId) => {
+    if (!userId) {
+      return {
+        id: doc.id,
+      };
+    }
+    return {
+      ...doc,
+      value: doc.value !== undefined ? doc.value : 0,
+    };
+  },
+  transformContextSelector: state => {
+    return state.ddp && state.ddp.status && state.ddp.status.userId;
+  },
 });
 
 test('all().byId() selects empty object if state is empty', () => {
@@ -237,4 +259,14 @@ test('persists value if result is the same', () => {
   const result1 = selector(state1, 1);
   const result2 = selector(state2, 1);
   expect(result1).toBe(result2);
+});
+
+test('hides value if there is no current userId', () => {
+  const selector = selectors.all().sort({ id: 1 });
+  expect(selector(state3, 1)).toEqual([
+    { id: 1 },
+    { id: 2 },
+    { id: 3 },
+    { id: 4 },
+  ]);
 });

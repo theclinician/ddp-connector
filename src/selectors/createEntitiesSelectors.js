@@ -32,15 +32,15 @@ const createEntitiesSelectors = (collection, {
   plugins,
   prefix = 'ddp',
   transform: transformRawObject,
-} = {}) => {
-  const empty = {};
-
-  const selectEntities = state => (
+  transformContextSelector,
+  selectEntities = state => (
     state &&
     state[prefix] &&
     state[prefix].entities &&
     state[prefix].entities[collection]
-  );
+  ),
+} = {}) => {
+  const empty = {};
 
   // NOTE: Values mapping selector returns the unchanged value if it's empty. This
   //       means that if we pass null, then it will return the same null, not empty
@@ -56,9 +56,14 @@ const createEntitiesSelectors = (collection, {
     mapOneObject = transformRawObject;
   }
   const selectAll = mapOneObject
-    ? createValuesMappingSelector(
-      selectEntitiesOrEmpty,
-      mapOneObject,
+    ? createHigherOrderSelector(
+      transformContextSelector || constant(null),
+      (transformContext) => {
+        return createValuesMappingSelector(
+          selectEntitiesOrEmpty,
+          object => mapOneObject(object, transformContext),
+        );    
+      }
     )
     : selectEntitiesOrEmpty;
 
