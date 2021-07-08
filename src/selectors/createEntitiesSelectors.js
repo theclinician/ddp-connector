@@ -49,7 +49,7 @@ const createEntitiesSelectors = (collection, {
 
   let mapOneObject;
   if (Model && transformRawObject) {
-    mapOneObject = rawObject => new Model(transformRawObject(rawObject));
+    mapOneObject = (rawObject, ctx) => new Model(transformRawObject(rawObject, ctx));
   } else if (Model) {
     mapOneObject = rawObject => new Model(rawObject);
   } else if (transformRawObject) {
