@@ -185,7 +185,7 @@ const createEntitiesSelectors = (collection, {
       getRelated = key;
     } else if (!key || typeof key === 'string') {
       const getKey = key ? createGetAtKey(key) : (doc, id) => id;
-      getRelated = (doc, id, byForeignKey) => byForeignKey[getKey(doc, id)];
+      getRelated = (doc, id, byForeignKey) => byForeignKey[getKey(doc, id)] || [];
     } else {
       getRelated = constant([]);
     }
@@ -197,7 +197,7 @@ const createEntitiesSelectors = (collection, {
       ),
       (docs, byForeignKey) => mapValues(docs, (doc, id) => ({
         doc,
-        related: getRelated(doc, id, byForeignKey) || [],
+        related: getRelated(doc, id, byForeignKey),
       })),
     );
     return createValuesMappingSelector(
