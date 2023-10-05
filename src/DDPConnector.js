@@ -194,8 +194,14 @@ class DDPConnector extends EventEmitter {
     this.subsManager.on('delete', ({ id }) => dispatch(deleteSubscription({ id })));
 
     this.subsManager.on('ready', ({ id }) => {
-      this.flushUpdates();
-      dispatch(updateSubscription({ id, ready: true }));
+      const state = store.getState();
+      const restoring = state && state.ddp && state.ddp.status && state.ddp.status.restoring;
+      if (restoring) {
+        dispatch(updateSubscription({ id, pendingReady: true }));  
+      } else {
+        this.flushUpdates();
+        dispatch(updateSubscription({ id, ready: true }));
+      }
     });
     this.subsManager.on('error', ({ id, error }) => {
       this.flushUpdates();

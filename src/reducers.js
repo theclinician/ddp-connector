@@ -1,4 +1,5 @@
 import omit from 'lodash/omit';
+import mapValues from 'lodash/mapValues';
 import { handleActions } from 'redux-actions';
 import { combineReducers } from 'redux';
 import {
@@ -80,6 +81,22 @@ export const subscriptionsReducer = handleActions({
   }),
 
   [deleteSubscription]: (state, { payload: { id } }) => omit(state, [id]),
+
+  [setRestoring]: (state, { payload }) => {
+    if (payload === false) {
+      return mapValues(state, (subscription) => {
+        if (subscription.pendingReady) {
+          const { pendingReady, ...other } = subscription;
+          return {
+            ...other,
+            ready: true,
+          };
+        }
+        return subscription;
+      });
+    }
+    return state;
+  },
 }, {});
 
 export const queriesReducer = handleActions({
